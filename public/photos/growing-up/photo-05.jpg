@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" width="800" height="1000">
+    <defs>
+      <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#E0F2FE" />
+        <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0.3" />
+        <stop offset="100%" stop-color="#BAE6FD" />
+      </linearGradient>
+    </defs>
+    <rect width="800" height="1000" fill="url(#grad)" />
+    <rect x="30" y="30" width="740" height="940" rx="20" fill="none" stroke="#FFFFFF" stroke-opacity="0.6" stroke-width="4" stroke-dasharray="12 12" />
+    <circle cx="400" cy="450" r="140" fill="#FFFFFF" fill-opacity="0.35" />
+    <text x="400" y="470" font-family="'Plus Jakarta Sans', sans-serif" font-size="80" text-anchor="middle" dominant-baseline="middle">🌱</text>
+    <text x="400" y="650" font-family="Georgia, serif" font-size="36" font-weight="bold" fill="#3D3043" text-anchor="middle">Growing Up #05</text>
+    <text x="400" y="700" font-family="'Plus Jakarta Sans', sans-serif" font-size="22" fill="#5F4B66" text-anchor="middle">Slot: growing-up/05</text>
+    <rect x="250" y="740" width="300" height="44" rx="22" fill="#FFFFFF" fill-opacity="0.7" />
+    <text x="400" y="768" font-family="'Plus Jakarta Sans', sans-serif" font-size="14" font-weight="bold" fill="#3D3043" text-anchor="middle" letter-spacing="2">REPLACE WITH YOUR PHOTO</text>
+  </svg>
