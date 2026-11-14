@@ -36,3 +36,4 @@ export const Mountains: React.FC = () => {
     </div>
   );
 };
+

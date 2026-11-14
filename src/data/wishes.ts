@@ -139,3 +139,4 @@ export const twentyTwoWishes: LittleWish[] = [
     icon: "🎂",
   },
 ];
+

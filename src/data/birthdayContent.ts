@@ -209,3 +209,4 @@ export const finaleContent = {
   signature: "Created with love, just for you. ❤️",
   wishesPrompt: "Click the moon to uncover 22 little wishes for you",
 };
+

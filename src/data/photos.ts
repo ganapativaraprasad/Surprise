@@ -413,3 +413,4 @@ export const birthdayPhotos: BirthdayPhotoCollection = {
     alt: "Sabdha birthday finale portrait"
   }
 };
+

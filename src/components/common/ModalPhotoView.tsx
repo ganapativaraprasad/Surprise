@@ -81,3 +81,4 @@ export const ModalPhotoView: React.FC<ModalPhotoViewProps> = ({ photo, onClose }
     </div>
   );
 };
+

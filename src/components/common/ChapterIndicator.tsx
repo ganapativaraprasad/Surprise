@@ -112,3 +112,4 @@ export const ChapterIndicator: React.FC<ChapterIndicatorProps> = ({
     </div>
   );
 };
+

@@ -50,3 +50,4 @@ export const Moon: React.FC<MoonProps> = ({ onOpenWishes }) => {
     </div>
   );
 };
+

@@ -30,11 +30,13 @@ export function App() {
     isUniverseMode,
   } = useSceneNavigation(0);
 
+  // Hook receives currentScene and automatically switches tracks with looping!
   const {
     isPlaying,
     isMuted,
     volume,
     worldMode,
+    currentTrackInfo,
     togglePlay,
     toggleMute,
     setVolume,
@@ -43,7 +45,7 @@ export function App() {
     playStarCollect,
     playWaterDrop,
     playUniverseBurst,
-  } = useAudio();
+  } = useAudio(currentScene);
 
   // Active selected photo for lightbox view
   const [selectedPhoto, setSelectedPhoto] = useState<BirthdayPhoto | null>(null);
@@ -90,6 +92,7 @@ export function App() {
         isMuted={isMuted}
         volume={volume}
         worldMode={worldMode}
+        currentTrack={currentTrackInfo}
         onTogglePlay={togglePlay}
         onToggleMute={toggleMute}
         onVolumeChange={setVolume}

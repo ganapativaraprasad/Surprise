@@ -382,3 +382,4 @@ export const NightSkyCanvas: React.FC<NightSkyCanvasProps> = ({
     />
   );
 };
+

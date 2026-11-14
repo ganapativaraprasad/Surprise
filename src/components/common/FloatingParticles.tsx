@@ -148,3 +148,4 @@ export const FloatingParticles: React.FC<FloatingParticlesProps> = ({
     />
   );
 };
+

@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Volume2, VolumeX, Pause, Play, Sliders } from 'lucide-react';
+import { ChapterMusicConfig } from '../../data/music';
 
 interface AudioPlayerProps {
   isPlaying: boolean;
   isMuted: boolean;
   volume: number;
   worldMode: 'memory' | 'universe';
+  currentTrack?: ChapterMusicConfig;
   onTogglePlay: () => void;
   onToggleMute: () => void;
   onVolumeChange: (vol: number) => void;
@@ -16,6 +18,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   isMuted,
   volume,
   worldMode,
+  currentTrack,
   onTogglePlay,
   onToggleMute,
   onVolumeChange,
@@ -29,8 +32,8 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
       <div
         className={`flex items-center gap-2 px-3 py-2 rounded-full backdrop-blur-md transition-all duration-300 shadow-md ${
           isDark
-            ? 'bg-slate-900/70 border border-slate-700/60 text-slate-200'
-            : 'bg-white/70 border border-pink-200/60 text-slate-700'
+            ? 'bg-slate-900/80 border border-slate-700/60 text-slate-200'
+            : 'bg-white/80 border border-pink-200/60 text-slate-700'
         }`}
       >
         {/* Play/Pause Button */}
@@ -50,21 +53,32 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
           {isPlaying ? (
             <>
               <Pause className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Music Playing</span>
+              <span className="hidden sm:inline truncate max-w-[140px]">
+                {currentTrack ? currentTrack.title : 'Playing Melody'}
+              </span>
             </>
           ) : (
             <>
               <Play className="w-3.5 h-3.5 fill-current" />
-              <span className="hidden sm:inline">Play Melody</span>
+              <span className="hidden sm:inline">Play Music</span>
             </>
           )}
 
           {/* Animated music wave bars when playing */}
           {isPlaying && (
             <div className="flex items-end gap-0.5 h-3">
-              <span className="w-0.5 bg-current rounded-full animate-[pulse_0.7s_infinite_ease-in-out]" style={{ height: '70%' }} />
-              <span className="w-0.5 bg-current rounded-full animate-[pulse_0.9s_infinite_ease-in-out_0.2s]" style={{ height: '100%' }} />
-              <span className="w-0.5 bg-current rounded-full animate-[pulse_0.6s_infinite_ease-in-out_0.4s]" style={{ height: '50%' }} />
+              <span
+                className="w-0.5 bg-current rounded-full animate-[pulse_0.7s_infinite_ease-in-out]"
+                style={{ height: '70%' }}
+              />
+              <span
+                className="w-0.5 bg-current rounded-full animate-[pulse_0.9s_infinite_ease-in-out_0.2s]"
+                style={{ height: '100%' }}
+              />
+              <span
+                className="w-0.5 bg-current rounded-full animate-[pulse_0.6s_infinite_ease-in-out_0.4s]"
+                style={{ height: '50%' }}
+              />
             </div>
           )}
         </button>
@@ -86,8 +100,12 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
           aria-label="Volume settings"
           className={`p-1.5 rounded-full transition-colors hidden sm:block ${
             showSlider
-              ? isDark ? 'bg-violet-900/50 text-violet-300' : 'bg-pink-100 text-pink-700'
-              : isDark ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-pink-50 text-slate-400'
+              ? isDark
+                ? 'bg-violet-900/50 text-violet-300'
+                : 'bg-pink-100 text-pink-700'
+              : isDark
+              ? 'hover:bg-slate-800 text-slate-400'
+              : 'hover:bg-pink-50 text-slate-400'
           }`}
         >
           <Sliders className="w-3.5 h-3.5" />

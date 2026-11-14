@@ -17,3 +17,4 @@ export const useReducedMotion = (): boolean => {
 
   return prefersReducedMotion;
 };
+

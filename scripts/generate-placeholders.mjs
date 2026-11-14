@@ -69,3 +69,4 @@ for (const p of photoMap) {
 }
 
 console.log('Successfully generated all photo placeholders in public/photos/');
+

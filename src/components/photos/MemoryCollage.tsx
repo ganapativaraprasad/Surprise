@@ -125,3 +125,4 @@ const FilmFrameItem: React.FC<{ photo: BirthdayPhoto; index: number; onClick: ()
     </div>
   );
 };
+

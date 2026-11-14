@@ -110,21 +110,31 @@ All personal messages, letters, titles, and wishes are kept strictly separated f
 
 ---
 
-## 🎵 Sound & Audio System
+## 🎵 Per-Chapter Music System
 
-The project features a **Web Audio API procedural sound synthesizer**:
-- Plays soothing, dreamy music box arpeggios and warm bass pads automatically without needing external audio downloads.
-- Ambient world switching: Warm harmonic chords in Memory World, ethereal celestial tones in the Magical Universe.
-- Interactive Sound Effects:
-  - Paper envelope opening swoosh
-  - Crystalline star collection chimes
-  - Water droplet ripples on lake tap
-  - Celestial harmonic chord burst when unlocking the universe
+The website features an intelligent, per-chapter continuous music engine:
+- **Looping**: Each chapter's music loops continuously while Sabdha is exploring that chapter.
+- **Crossfading**: When shifting to another chapter, the current music smoothly fades out and the new chapter's music fades in.
+- **Graceful Fallback**: If a chapter's track hasn't been added yet, the engine automatically plays a gentle procedural ambient melody, so there's never awkward silence.
 
-### Using Custom MP3 Music (Optional)
-If you prefer your own MP3 tracks:
-1. Place your track at `public/audio/bg-music.mp3` or `public/audio/finale-music.mp3`.
-2. The UI includes play/pause, mute/unmute, and volume slider controls accessible on all devices.
+### Audio File Directory (`public/audio/`)
+Simply place each chapter's track into `public/audio/` with these exact filenames:
+
+| Scene / Chapter | Filename | Description / Status |
+| :--- | :--- | :--- |
+| **Scene 00 – The Invitation** | `public/audio/invitation.mp3` | Opening mystery theme |
+| **Scene 01 – Birthday Welcome** | `public/audio/welcome.mp3` | Celebratory intro theme |
+| **Scene 02 – Chapter 01: Little Sabdha** | `public/audio/ch-01.mp3` | **Installed & Active** ✅ |
+| **Scene 03 – Chapter 02: Growing Up** | `public/audio/ch-02.mp3` | Timeline theme |
+| **Scene 04 – Chapter 03: Her Beautiful World** | `public/audio/ch-03.mp3` | Warm family theme |
+| **Scene 05 – Chapter 04: Beautiful People** | `public/audio/ch-04.mp3` | Cheerful friends theme |
+| **Scene 06 – Chapter 05: Our Little World** | `public/audio/ch-05.mp3` | Intimate best-friend theme |
+| **Scene 07 – Chapter 06: What Makes You, You** | `public/audio/ch-06.mp3` | Special traits theme |
+| **Scene 08 – Chapter 07: A Letter From Me** | `public/audio/ch-07.mp3` | Emotional letter theme |
+| **Scene 09 – Chapter 08: Catch The Stars** | `public/audio/ch-08.mp3` | Playful mini-game theme |
+| **Scene 10 – Chapter 09: The Magical Universe**| `public/audio/ch-09.mp3` | Celestial starlit lake finale |
+
+All settings (track names, file paths, loop behavior, base volumes) are centrally configured in [music.ts](file:///c:/Users/prasa/OneDrive/Desktop/SABDHA/src/data/music.ts).
 
 ---
 
@@ -180,3 +190,4 @@ npm run preview
 ---
 
 *Created with love, just for Sabdha. ❤️*
+

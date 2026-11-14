@@ -92,3 +92,4 @@ export const PolaroidPhoto: React.FC<PolaroidPhotoProps> = ({
     </div>
   );
 };
+

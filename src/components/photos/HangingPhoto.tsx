@@ -85,3 +85,4 @@ export const HangingPhoto: React.FC<HangingPhotoProps> = ({
     </div>
   );
 };
+
