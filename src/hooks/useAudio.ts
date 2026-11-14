@@ -1,191 +1,129 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { getMusicForScene, ChapterMusicConfig } from '../data/music';
 
-// Web Audio API Procedural Synth for SFX and Fallback Ambient Music
-class DreamAudioEngine {
+// Short sound effects (Envelope whoosh, star collect chime, water ripple, universe burst)
+// Uses simple Web Audio oscillators that auto-terminate in < 0.6 seconds. No background music.
+class SoundEffectsPlayer {
   private ctx: AudioContext | null = null;
-  private isPlayingSynth = false;
-  private masterGain: GainNode | null = null;
   private sfxGain: GainNode | null = null;
-  private synthGain: GainNode | null = null;
-  private timerId: number | null = null;
-  private currentMode: 'memory' | 'universe' = 'memory';
-  private currentStep = 0;
 
-  private memoryNotes = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25];
-  private universeNotes = [130.81, 196.00, 246.94, 261.63, 329.63, 392.00, 493.88, 523.25, 659.25, 783.99];
-
-  public initContext() {
+  private init() {
     if (!this.ctx) {
       const AudioCtx =
         window.AudioContext ||
         (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       this.ctx = new AudioCtx();
-
-      this.masterGain = this.ctx.createGain();
-      this.masterGain.gain.setValueAtTime(0.7, this.ctx.currentTime);
-      this.masterGain.connect(this.ctx.destination);
-
-      this.synthGain = this.ctx.createGain();
-      this.synthGain.gain.setValueAtTime(0.35, this.ctx.currentTime);
-      this.synthGain.connect(this.masterGain);
-
       this.sfxGain = this.ctx.createGain();
-      this.sfxGain.gain.setValueAtTime(0.5, this.ctx.currentTime);
-      this.sfxGain.connect(this.masterGain);
+      this.sfxGain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+      this.sfxGain.connect(this.ctx.destination);
     }
-
     if (this.ctx.state === 'suspended') {
       this.ctx.resume();
     }
   }
 
-  public setMode(mode: 'memory' | 'universe') {
-    this.currentMode = mode;
-  }
-
   public setVolume(vol: number) {
-    if (this.masterGain && this.ctx) {
-      this.masterGain.gain.setTargetAtTime(Math.max(0, Math.min(1, vol)), this.ctx.currentTime, 0.05);
-    }
-  }
-
-  public startSynth() {
-    this.initContext();
-    if (this.isPlayingSynth) return;
-    this.isPlayingSynth = true;
-
-    const playStep = () => {
-      if (!this.isPlayingSynth || !this.ctx || !this.synthGain) return;
-
-      const now = this.ctx.currentTime;
-      const notes = this.currentMode === 'memory' ? this.memoryNotes : this.universeNotes;
-      const freq = notes[Math.floor(Math.random() * notes.length)];
-
-      const osc = this.ctx.createOscillator();
-      const noteGain = this.ctx.createGain();
-
-      osc.type = this.currentMode === 'memory' ? 'sine' : 'triangle';
-      osc.frequency.setValueAtTime(freq, now);
-
-      noteGain.gain.setValueAtTime(0.001, now);
-      noteGain.gain.exponentialRampToValueAtTime(0.18, now + 0.04);
-      noteGain.gain.exponentialRampToValueAtTime(0.0001, now + (this.currentMode === 'memory' ? 1.8 : 2.8));
-
-      osc.connect(noteGain);
-      noteGain.connect(this.synthGain);
-
-      osc.start(now);
-      osc.stop(now + 3.0);
-
-      if (this.currentStep % 4 === 0) {
-        const bassOsc = this.ctx.createOscillator();
-        const bassGain = this.ctx.createGain();
-        bassOsc.type = 'sine';
-        bassOsc.frequency.setValueAtTime(this.currentMode === 'memory' ? 130.81 : 98.00, now);
-        bassGain.gain.setValueAtTime(0.001, now);
-        bassGain.gain.exponentialRampToValueAtTime(0.1, now + 0.3);
-        bassGain.gain.exponentialRampToValueAtTime(0.0001, now + 3.5);
-        bassOsc.connect(bassGain);
-        bassGain.connect(this.synthGain);
-        bassOsc.start(now);
-        bassOsc.stop(now + 3.6);
-      }
-
-      this.currentStep++;
-      const nextDelay = this.currentMode === 'memory' ? 450 + Math.random() * 200 : 600 + Math.random() * 400;
-      this.timerId = window.setTimeout(playStep, nextDelay);
-    };
-
-    playStep();
-  }
-
-  public stopSynth() {
-    this.isPlayingSynth = false;
-    if (this.timerId) {
-      clearTimeout(this.timerId);
-      this.timerId = null;
+    if (this.sfxGain && this.ctx) {
+      this.sfxGain.gain.setValueAtTime(Math.max(0, Math.min(1, vol * 0.5)), this.ctx.currentTime);
     }
   }
 
   public playEnvelope() {
-    this.initContext();
+    this.init();
     if (!this.ctx || !this.sfxGain) return;
     const now = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
     osc.type = 'sine';
     osc.frequency.setValueAtTime(300, now);
-    osc.frequency.exponentialRampToValueAtTime(1400, now + 0.45);
+    osc.frequency.exponentialRampToValueAtTime(1200, now + 0.35);
+
     gain.gain.setValueAtTime(0.01, now);
-    gain.gain.linearRampToValueAtTime(0.2, now + 0.15);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+    gain.gain.linearRampToValueAtTime(0.2, now + 0.1);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+
     osc.connect(gain);
     gain.connect(this.sfxGain);
     osc.start(now);
-    osc.stop(now + 0.52);
+    osc.stop(now + 0.42);
   }
 
   public playStarCollect(index: number = 0) {
-    this.initContext();
+    this.init();
     if (!this.ctx || !this.sfxGain) return;
     const now = this.ctx.currentTime;
-    const baseFreqs = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+    const baseFreqs = [523.25, 659.25, 783.99, 1046.5, 1318.51];
     const freq = baseFreqs[Math.min(index, baseFreqs.length - 1)];
+
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
     osc.type = 'sine';
     osc.frequency.setValueAtTime(freq, now);
-    osc.frequency.exponentialRampToValueAtTime(freq * 1.5, now + 0.35);
+    osc.frequency.exponentialRampToValueAtTime(freq * 1.5, now + 0.3);
+
     gain.gain.setValueAtTime(0.01, now);
     gain.gain.linearRampToValueAtTime(0.25, now + 0.05);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.7);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.6);
+
     osc.connect(gain);
     gain.connect(this.sfxGain);
     osc.start(now);
-    osc.stop(now + 0.72);
+    osc.stop(now + 0.62);
   }
 
   public playWaterDrop() {
-    this.initContext();
+    this.init();
     if (!this.ctx || !this.sfxGain) return;
     const now = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(1200, now);
-    osc.frequency.exponentialRampToValueAtTime(400, now + 0.18);
+    osc.frequency.setValueAtTime(1100, now);
+    osc.frequency.exponentialRampToValueAtTime(350, now + 0.15);
+
     gain.gain.setValueAtTime(0.18, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+
     osc.connect(gain);
     gain.connect(this.sfxGain);
     osc.start(now);
-    osc.stop(now + 0.25);
+    osc.stop(now + 0.22);
   }
 
   public playUniverseBurst() {
-    this.initContext();
+    this.init();
     if (!this.ctx || !this.sfxGain) return;
     const now = this.ctx.currentTime;
-    const chords = [261.63, 329.63, 392.00, 523.25, 659.25, 1046.50];
+    const chords = [261.63, 329.63, 392.0, 523.25, 659.25];
     chords.forEach((f, i) => {
       if (!this.ctx || !this.sfxGain) return;
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(f, now + i * 0.06);
-      gain.gain.setValueAtTime(0.001, now + i * 0.06);
-      gain.gain.linearRampToValueAtTime(0.15, now + i * 0.06 + 0.04);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.06 + 2.2);
+      osc.frequency.setValueAtTime(f, now + i * 0.05);
+      gain.gain.setValueAtTime(0.001, now + i * 0.05);
+      gain.gain.linearRampToValueAtTime(0.15, now + i * 0.05 + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.05 + 1.8);
       osc.connect(gain);
       gain.connect(this.sfxGain);
-      osc.start(now + i * 0.06);
-      osc.stop(now + i * 0.06 + 2.3);
+      osc.start(now + i * 0.05);
+      osc.stop(now + i * 0.05 + 1.9);
     });
   }
 }
 
-const sfxEngine = new DreamAudioEngine();
+const sfx = new SoundEffectsPlayer();
+
+// Global single Audio instance to guarantee only ONE track plays at any moment
+let globalAudio: HTMLAudioElement | null = null;
+
+const getGlobalAudio = (): HTMLAudioElement => {
+  if (!globalAudio) {
+    globalAudio = new Audio();
+    globalAudio.preload = 'auto';
+  }
+  return globalAudio;
+};
 
 export const useAudio = (currentSceneIndex: number = 0) => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -196,158 +134,155 @@ export const useAudio = (currentSceneIndex: number = 0) => {
     getMusicForScene(currentSceneIndex)
   );
 
-  const activeAudioRef = useRef<HTMLAudioElement | null>(null);
-  const userInitiatedRef = useRef(false);
-  const fadeIntervalRef = useRef<number | null>(null);
+  const isUserPlayingRef = useRef(false);
+  const activeSceneRef = useRef(currentSceneIndex);
 
-  // Smoothly crossfade from old audio element to new audio element
-  const transitionToTrack = useCallback(
-    (track: ChapterMusicConfig, shouldPlay: boolean) => {
-      setCurrentTrackInfo(track);
-
-      // Stop any existing fade
-      if (fadeIntervalRef.current) {
-        window.clearInterval(fadeIntervalRef.current);
-        fadeIntervalRef.current = null;
-      }
-
-      const prevAudio = activeAudioRef.current;
-
-      // Create new audio element for this chapter
-      const newAudio = new Audio(track.audioSrc);
-      newAudio.loop = track.loop ?? true;
-      const targetVolume = isMuted ? 0 : volume * track.volume;
-      newAudio.volume = shouldPlay ? 0 : targetVolume;
-
-      // When audio ends or errors (e.g. file not added yet), fallback gracefully to synth
-      newAudio.onerror = () => {
-        if (userInitiatedRef.current && isPlaying) {
-          sfxEngine.startSynth();
-        }
-      };
-
-      if (shouldPlay) {
-        newAudio
-          .play()
-          .then(() => {
-            // Succeeded playing track file! Stop synth if it was running
-            sfxEngine.stopSynth();
-
-            // Fade in new audio
-            let cur = 0;
-            const step = targetVolume / 15;
-            fadeIntervalRef.current = window.setInterval(() => {
-              cur = Math.min(targetVolume, cur + step);
-              if (newAudio) newAudio.volume = cur;
-              if (cur >= targetVolume) {
-                if (fadeIntervalRef.current) {
-                  window.clearInterval(fadeIntervalRef.current);
-                  fadeIntervalRef.current = null;
-                }
-              }
-            }, 30);
-          })
-          .catch(() => {
-            // Browser autoplay policy or missing file -> fallback to procedural melody
-            if (userInitiatedRef.current) {
-              sfxEngine.startSynth();
-            }
-          });
-      }
-
-      // Fade out previous audio
-      if (prevAudio) {
-        let prevVol = prevAudio.volume;
-        const fadeOut = window.setInterval(() => {
-          prevVol = Math.max(0, prevVol - 0.1);
-          prevAudio.volume = prevVol;
-          if (prevVol <= 0) {
-            window.clearInterval(fadeOut);
-            prevAudio.pause();
-            prevAudio.currentTime = 0;
-            prevAudio.src = '';
-          }
-        }, 30);
-      }
-
-      activeAudioRef.current = newAudio;
+  // Sync volume & mute to the single global audio instance
+  const applyAudioSettings = useCallback(
+    (trackVol: number = 0.75) => {
+      const audio = getGlobalAudio();
+      const effectiveVol = isMuted ? 0 : volume * trackVol;
+      audio.volume = Math.max(0, Math.min(1, effectiveVol));
+      audio.muted = isMuted;
+      sfx.setVolume(isMuted ? 0 : volume);
     },
-    [isMuted, volume, isPlaying]
+    [isMuted, volume]
   );
 
-  // Whenever currentSceneIndex changes (user moves to a new chapter):
-  useEffect(() => {
-    const nextTrack = getMusicForScene(currentSceneIndex);
-    const shouldPlay = isPlaying || userInitiatedRef.current;
-    transitionToTrack(nextTrack, shouldPlay);
-  }, [currentSceneIndex, transitionToTrack]);
+  // Switch to a new chapter's music: stops previous song, loads new song, and loops it
+  const playChapterTrack = useCallback(
+    (track: ChapterMusicConfig, shouldPlay: boolean) => {
+      setCurrentTrackInfo(track);
+      const audio = getGlobalAudio();
 
-  // Handle Play/Pause
+      // If no track for this chapter (e.g. empty string), pause and return
+      if (!track.audioSrc) {
+        audio.pause();
+        audio.currentTime = 0;
+        setIsPlaying(false);
+        return;
+      }
+
+      applyAudioSettings(track.volume);
+
+      // Check if this exact source is already playing
+      const isSameSrc = audio.src && audio.src.endsWith(track.audioSrc);
+
+      if (!isSameSrc) {
+        // Stop previous chapter's song completely!
+        audio.pause();
+        audio.currentTime = 0;
+        audio.src = track.audioSrc;
+        audio.loop = track.loop ?? true;
+      }
+
+      if (shouldPlay) {
+        audio
+          .play()
+          .then(() => {
+            setIsPlaying(true);
+            isUserPlayingRef.current = true;
+          })
+          .catch((err) => {
+            console.warn('Playback prevented or file loading:', err);
+            setIsPlaying(false);
+          });
+      } else {
+        audio.pause();
+        setIsPlaying(false);
+      }
+    },
+    [applyAudioSettings]
+  );
+
+  // When chapter changes:
+  useEffect(() => {
+    activeSceneRef.current = currentSceneIndex;
+    const track = getMusicForScene(currentSceneIndex);
+
+    // If user has started music playback, automatically switch and play the new chapter's song
+    const shouldPlay = isUserPlayingRef.current;
+    playChapterTrack(track, shouldPlay);
+  }, [currentSceneIndex, playChapterTrack]);
+
+  // Sync native audio events to state
+  useEffect(() => {
+    const audio = getGlobalAudio();
+
+    const onPlay = () => setIsPlaying(true);
+    const onPause = () => setIsPlaying(false);
+    const onError = () => setIsPlaying(false);
+
+    audio.addEventListener('play', onPlay);
+    audio.addEventListener('pause', onPause);
+    audio.addEventListener('error', onError);
+
+    return () => {
+      audio.removeEventListener('play', onPlay);
+      audio.removeEventListener('pause', onPause);
+      audio.removeEventListener('error', onError);
+    };
+  }, []);
+
+  // Play / Pause Toggle
   const togglePlay = useCallback(() => {
-    userInitiatedRef.current = true;
-    sfxEngine.initContext();
+    const audio = getGlobalAudio();
+    const track = getMusicForScene(activeSceneRef.current);
 
     if (isPlaying) {
-      if (activeAudioRef.current) {
-        activeAudioRef.current.pause();
-      }
-      sfxEngine.stopSynth();
+      // Pause immediately
+      audio.pause();
+      isUserPlayingRef.current = false;
       setIsPlaying(false);
     } else {
-      setIsPlaying(true);
-      const track = getMusicForScene(currentSceneIndex);
-      if (activeAudioRef.current && activeAudioRef.current.src.includes(track.audioSrc)) {
-        activeAudioRef.current
-          .play()
-          .then(() => sfxEngine.stopSynth())
-          .catch(() => sfxEngine.startSynth());
-      } else {
-        transitionToTrack(track, true);
-      }
+      // Start playing this chapter's song
+      isUserPlayingRef.current = true;
+      playChapterTrack(track, true);
     }
-  }, [isPlaying, currentSceneIndex, transitionToTrack]);
+  }, [isPlaying, playChapterTrack]);
 
-  // Handle Mute/Unmute
+  // Explicit start music helper (e.g. on opening the surprise)
+  const startMusic = useCallback(() => {
+    isUserPlayingRef.current = true;
+    const track = getMusicForScene(activeSceneRef.current);
+    if (track.audioSrc) {
+      playChapterTrack(track, true);
+    }
+  }, [playChapterTrack]);
+
+  // Mute / Unmute Toggle
   const toggleMute = useCallback(() => {
-    if (isMuted) {
-      setIsMuted(false);
-      if (activeAudioRef.current) {
-        activeAudioRef.current.volume = volume * currentTrackInfo.volume;
-      }
-      sfxEngine.setVolume(volume);
+    const nextMuted = !isMuted;
+    setIsMuted(nextMuted);
+    const audio = getGlobalAudio();
+    audio.muted = nextMuted;
+    if (nextMuted) {
+      audio.volume = 0;
+      sfx.setVolume(0);
     } else {
-      setIsMuted(true);
-      if (activeAudioRef.current) {
-        activeAudioRef.current.volume = 0;
-      }
-      sfxEngine.setVolume(0);
+      const track = getMusicForScene(activeSceneRef.current);
+      audio.volume = volume * (track.volume || 0.75);
+      sfx.setVolume(volume);
     }
-  }, [isMuted, volume, currentTrackInfo]);
+  }, [isMuted, volume]);
 
-  // Handle Volume change
+  // Volume Slider Change
   const setVolume = useCallback(
     (val: number) => {
       setVolumeState(val);
+      const audio = getGlobalAudio();
       if (!isMuted) {
-        if (activeAudioRef.current) {
-          activeAudioRef.current.volume = val * currentTrackInfo.volume;
-        }
-        sfxEngine.setVolume(val);
+        const track = getMusicForScene(activeSceneRef.current);
+        audio.volume = val * (track.volume || 0.75);
+        sfx.setVolume(val);
       }
     },
-    [isMuted, currentTrackInfo]
+    [isMuted]
   );
 
-  // Switch world mode
   const switchMode = useCallback((mode: 'memory' | 'universe') => {
     setWorldMode(mode);
-    sfxEngine.setMode(mode);
   }, []);
-
-  const playEnvelope = useCallback(() => sfxEngine.playEnvelope(), []);
-  const playStarCollect = useCallback((index: number) => sfxEngine.playStarCollect(index), []);
-  const playWaterDrop = useCallback(() => sfxEngine.playWaterDrop(), []);
-  const playUniverseBurst = useCallback(() => sfxEngine.playUniverseBurst(), []);
 
   return {
     isPlaying,
@@ -356,12 +291,13 @@ export const useAudio = (currentSceneIndex: number = 0) => {
     worldMode,
     currentTrackInfo,
     togglePlay,
+    startMusic,
     toggleMute,
     setVolume,
     switchMode,
-    playEnvelope,
-    playStarCollect,
-    playWaterDrop,
-    playUniverseBurst,
+    playEnvelope: useCallback(() => sfx.playEnvelope(), []),
+    playStarCollect: useCallback((i: number) => sfx.playStarCollect(i), []),
+    playWaterDrop: useCallback(() => sfx.playWaterDrop(), []),
+    playUniverseBurst: useCallback(() => sfx.playUniverseBurst(), []),
   };
 };

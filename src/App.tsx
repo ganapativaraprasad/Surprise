@@ -38,6 +38,7 @@ export function App() {
     worldMode,
     currentTrackInfo,
     togglePlay,
+    startMusic,
     toggleMute,
     setVolume,
     switchMode,
@@ -59,15 +60,8 @@ export function App() {
     }
   }, [isUniverseMode, worldMode, switchMode]);
 
-  // Start BGM automatically on first user click if not playing yet
-  const ensureMusicStarted = () => {
-    if (!isPlaying && !isMuted) {
-      togglePlay();
-    }
-  };
-
   const handleOpenInvitation = () => {
-    ensureMusicStarted();
+    startMusic();
     nextScene();
   };
 

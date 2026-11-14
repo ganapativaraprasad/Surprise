@@ -38,35 +38,39 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
       >
         {/* Play/Pause Button */}
         <button
-          onClick={onTogglePlay}
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onTogglePlay();
+          }}
           aria-label={isPlaying ? 'Pause music' : 'Play music'}
-          className={`flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
+          className={`cursor-pointer flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-all shadow-xs ${
             isPlaying
               ? isDark
-                ? 'bg-violet-600/40 text-violet-200 border border-violet-400/40'
-                : 'bg-pink-100 text-pink-700 border border-pink-300/50'
+                ? 'bg-violet-600/50 text-violet-100 border border-violet-400/50 hover:bg-violet-600/70'
+                : 'bg-pink-100 text-pink-800 border border-pink-300 hover:bg-pink-200'
               : isDark
-              ? 'hover:bg-slate-800 text-slate-300'
-              : 'hover:bg-pink-50 text-slate-600'
+              ? 'bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-600/50'
+              : 'bg-white hover:bg-pink-50 text-slate-700 border border-pink-200'
           }`}
         >
           {isPlaying ? (
             <>
-              <Pause className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline truncate max-w-[140px]">
+              <Pause className="w-3.5 h-3.5 fill-current" />
+              <span className="hidden sm:inline truncate max-w-[150px]">
                 {currentTrack ? currentTrack.title : 'Playing Melody'}
               </span>
             </>
           ) : (
             <>
-              <Play className="w-3.5 h-3.5 fill-current" />
-              <span className="hidden sm:inline">Play Music</span>
+              <Play className="w-3.5 h-3.5 fill-current text-pink-600 dark:text-violet-400" />
+              <span className="hidden sm:inline">Play Chapter Music</span>
             </>
           )}
 
           {/* Animated music wave bars when playing */}
           {isPlaying && (
-            <div className="flex items-end gap-0.5 h-3">
+            <div className="flex items-end gap-0.5 h-3 ml-0.5">
               <span
                 className="w-0.5 bg-current rounded-full animate-[pulse_0.7s_infinite_ease-in-out]"
                 style={{ height: '70%' }}
