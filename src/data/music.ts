@@ -20,10 +20,10 @@ export const chapterMusicList: ChapterMusicConfig[] = [
   {
     sceneIndex: 1,
     chapterId: 'welcome',
-    title: 'Welcome Sabdha',
-    audioSrc: '/audio/ch-01.mp3', // Initial celebratory music
+    title: "Entrance: Welcome to Sabdha's World",
+    audioSrc: '/audio/entrance.mp3', // Entrance song after passcode and before CH-01
     loop: true,
-    volume: 0.7,
+    volume: 0.75,
   },
   {
     sceneIndex: 2,
@@ -84,10 +84,10 @@ export const chapterMusicList: ChapterMusicConfig[] = [
   {
     sceneIndex: 9,
     chapterId: 'catch-stars',
-    title: 'Chapter 08: Catch The Stars',
-    audioSrc: '/audio/ch-08.mp3', // CH-08 (or user-provided mini-game track)
+    title: 'Chapter 08: Catch The Stars (Game)',
+    audioSrc: '/audio/game.mp3', // Game chapter song
     loop: true,
-    volume: 0.75,
+    volume: 0.8,
   },
   {
     sceneIndex: 10,

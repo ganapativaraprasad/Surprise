@@ -5,7 +5,7 @@ import { FloatingParticles } from './components/common/FloatingParticles';
 import { AudioPlayer } from './components/common/AudioPlayer';
 import { ChapterIndicator } from './components/common/ChapterIndicator';
 import { ModalPhotoView } from './components/common/ModalPhotoView';
-import { BirthdayPhoto } from './data/photos';
+import { birthdayPhotos, BirthdayPhoto } from './data/photos';
 
 // All 11 Cinematic Scenes
 import { Scene01_Invitation } from './scenes/Scene01_Invitation';
@@ -86,6 +86,7 @@ export function App() {
         isMuted={isMuted}
         volume={volume}
         worldMode={worldMode}
+        isDarkTheme={currentScene === 0 || isUniverseMode}
         currentTrack={currentTrackInfo}
         onTogglePlay={togglePlay}
         onToggleMute={toggleMute}
@@ -151,6 +152,7 @@ export function App() {
           <Scene09_BirthdayLetter
             onPlayEnvelopeSfx={playEnvelope}
             onNextChapter={() => goToScene(9)}
+            onSelectPhoto={setSelectedPhoto}
           />
         )}
 
@@ -182,9 +184,25 @@ export function App() {
         worldMode={worldMode}
       />
 
-      {/* Full Size Photo Lightbox View */}
+      {/* Full Size Photo Lightbox View with Next/Prev Navigation */}
       <ModalPhotoView
         photo={selectedPhoto}
+        photoList={
+          currentScene === 2
+            ? birthdayPhotos.childhood
+            : currentScene === 3
+            ? birthdayPhotos.growingUp
+            : currentScene === 4
+            ? birthdayPhotos.family
+            : currentScene === 5
+            ? birthdayPhotos.friends
+            : currentScene === 6
+            ? birthdayPhotos.ourMemories
+            : currentScene === 7
+            ? birthdayPhotos.specialMoments
+            : []
+        }
+        onSelectPhoto={setSelectedPhoto}
         onClose={() => setSelectedPhoto(null)}
       />
     </div>

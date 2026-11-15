@@ -7,6 +7,7 @@ interface AudioPlayerProps {
   isMuted: boolean;
   volume: number;
   worldMode: 'memory' | 'universe';
+  isDarkTheme?: boolean;
   currentTrack?: ChapterMusicConfig;
   onTogglePlay: () => void;
   onToggleMute: () => void;
@@ -18,6 +19,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   isMuted,
   volume,
   worldMode,
+  isDarkTheme,
   currentTrack,
   onTogglePlay,
   onToggleMute,
@@ -25,7 +27,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
 }) => {
   const [showSlider, setShowSlider] = useState(false);
 
-  const isDark = worldMode === 'universe';
+  const isDark = worldMode === 'universe' || !!isDarkTheme;
 
   return (
     <div className="fixed top-5 right-5 z-50 flex items-center gap-2">

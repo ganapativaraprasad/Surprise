@@ -1,131 +1,320 @@
-import React, { useState } from 'react';
-import { invitationContent } from '../data/birthdayContent';
-import { Sparkles, Heart } from 'lucide-react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import confetti from 'canvas-confetti';
+import { Sparkles } from 'lucide-react';
+import { StarFieldCanvas } from '../components/portal/StarFieldCanvas';
+import { GuardianBearCharacter, BearEmotion } from '../components/portal/GuardianBearCharacter';
+import { RealisticEnvelope } from '../components/portal/RealisticEnvelope';
+import { PasscodeKeypad } from '../components/portal/PasscodeKeypad';
+import { SecretSpeechBubble } from '../components/portal/SecretSpeechBubble';
 
 interface Scene01Props {
   onOpenSurprise: () => void;
   onPlayEnvelopeSfx: () => void;
 }
 
+const CORRECT_PASSCODE = '2004';
+
+// Synthesize pleasant sound effects directly via Web Audio
+const playSfx = (type: 'type' | 'error' | 'success') => {
+  try {
+    const AudioCtx =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const now = ctx.currentTime;
+
+    if (type === 'type') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(520 + Math.random() * 80, now);
+      gain.gain.setValueAtTime(0.06, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.09);
+    } else if (type === 'error') {
+      // Disappointed / cute angry buzz
+      [220, 165].forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.12);
+        gain.gain.setValueAtTime(0.12, now + idx * 0.12);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + (idx + 1) * 0.13);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + idx * 0.12);
+        osc.stop(now + (idx + 1) * 0.14);
+      });
+    } else if (type === 'success') {
+      // Magical triumphant arpeggio
+      [523.25, 659.25, 783.99, 1046.5].forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.09);
+        gain.gain.setValueAtTime(0.16, now + idx * 0.09);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.09 + 0.35);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + idx * 0.09);
+        osc.stop(now + idx * 0.09 + 0.38);
+      });
+    }
+  } catch {
+    // Non-blocking fallback if audio context is restricted
+  }
+};
+
 export const Scene01_Invitation: React.FC<Scene01Props> = ({
   onOpenSurprise,
   onPlayEnvelopeSfx,
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [digits, setDigits] = useState<string[]>(['', '', '', '']);
+  const [emotion, setEmotion] = useState<BearEmotion>('idle');
+  const [isError, setIsError] = useState(false);
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [envelopeOpen, setEnvelopeOpen] = useState(false);
+  const [showHint, setShowHint] = useState(false);
+  const [speechText, setSpeechText] = useState(
+    'Halt, Queen Sabdha! 🧸 Security Bears Barnaby & Bella here! Only the birthday girl knows the secret 4-digit Birth Year code to unlock this universe! Enter your birth year below 👇'
+  );
 
-  const handleOpen = () => {
-    if (isOpen) return;
-    setIsOpen(true);
-    onPlayEnvelopeSfx();
+  const inputRefs = [
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+  ];
 
-    // Allow the flap and glow animation to shine before transitioning to welcome
-    setTimeout(() => {
-      onOpenSurprise();
-    }, 1200);
+  // Auto-focus first input on load
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      inputRefs[0].current?.focus();
+    }, 600);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const validatePasscode = useCallback(
+    (enteredCode: string) => {
+      if (enteredCode === CORRECT_PASSCODE) {
+        // CORRECT PASSCODE (2004)
+        setIsError(false);
+        setIsUnlocked(true);
+        setEmotion('celebrating');
+        playSfx('success');
+
+        setSpeechText(
+          'YAAAY!! 🎉💖 PASSCODE ACCEPTED! It really is you, Queen Sabdha! Unlocking your magical universe right now... ✨'
+        );
+
+        // Confetti burst
+        confetti({
+          particleCount: 140,
+          spread: 90,
+          origin: { y: 0.6 },
+          colors: ['#F472B6', '#FBBF24', '#A855F7', '#38BDF8', '#EC4899', '#FFF0E5'],
+        });
+
+        setTimeout(() => {
+          setEnvelopeOpen(true);
+          onPlayEnvelopeSfx();
+        }, 800);
+
+        setTimeout(() => {
+          onOpenSurprise();
+        }, 2500);
+      } else {
+        // WRONG CODE -> ANGRY BEARS
+        setIsError(true);
+        setEmotion('angry');
+        playSfx('error');
+
+        setSpeechText(
+          `HMMMPH!! 😤💢 WRONG CODE! "${enteredCode}" is NOT your birth year! The teddy bears are angry! Type the right code (2004) to enter your magical world!! 🧸💨`
+        );
+
+        // Vibrate on mobile
+        if ('vibrate' in navigator) {
+          navigator.vibrate([100, 60, 100]);
+        }
+
+        // Reset after shake
+        setTimeout(() => {
+          setIsError(false);
+          setDigits(['', '', '', '']);
+          inputRefs[0].current?.focus();
+        }, 1800);
+      }
+    },
+    [onOpenSurprise, onPlayEnvelopeSfx]
+  );
+
+  const handleDigitChange = (index: number, value: string) => {
+    if (isUnlocked) return;
+
+    const cleaned = value.replace(/[^0-9]/g, '');
+    const char = cleaned.slice(-1);
+
+    const newDigits = [...digits];
+    newDigits[index] = char;
+    setDigits(newDigits);
+
+    if (char) {
+      playSfx('type');
+      setEmotion('typing');
+      setSpeechText('Ooooh! What year is that? Keep typing... 🐾✨');
+
+      if (index < 3) {
+        inputRefs[index + 1].current?.focus();
+      }
+    }
+
+    const currentCode = newDigits.join('');
+    if (currentCode.length === 4) {
+      validatePasscode(currentCode);
+    }
+  };
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace') {
+      if (!digits[index] && index > 0) {
+        inputRefs[index - 1].current?.focus();
+      }
+    } else if (e.key === 'Enter') {
+      const currentCode = digits.join('');
+      if (currentCode.length === 4) {
+        validatePasscode(currentCode);
+      }
+    }
+  };
+
+  const handleKeypadPress = (val: string) => {
+    if (isUnlocked) return;
+
+    if (val === 'clear') {
+      setDigits(['', '', '', '']);
+      inputRefs[0].current?.focus();
+      setEmotion('idle');
+      setSpeechText('Cleared! Take your time, Sabdha! Which year were you born in? 🧸');
+      return;
+    }
+
+    if (val === 'backspace') {
+      const lastIndex = digits.reduce((acc, curr, idx) => (curr ? idx : acc), -1);
+      if (lastIndex >= 0) {
+        const newDigits = [...digits];
+        newDigits[lastIndex] = '';
+        setDigits(newDigits);
+        inputRefs[lastIndex].current?.focus();
+      }
+      return;
+    }
+
+    const emptyIndex = digits.findIndex((d) => d === '');
+    if (emptyIndex !== -1) {
+      handleDigitChange(emptyIndex, val);
+    }
   };
 
   return (
-    <div className="relative min-h-screen w-full flex flex-col items-center justify-center px-4 overflow-hidden bg-gradient-to-b from-[#180F2A] via-[#2A1845] to-[#120B20] text-white">
-      {/* Background radial glow */}
-      <div className="absolute w-[500px] h-[500px] rounded-full bg-pink-500/15 blur-[120px] pointer-events-none" />
-      <div className="absolute w-[400px] h-[400px] rounded-full bg-purple-500/20 blur-[100px] pointer-events-none" />
+    <div className="relative w-full min-h-[100svh] flex flex-col justify-between items-center px-4 sm:px-6 lg:px-12 py-6 sm:py-8 overflow-x-hidden bg-[#170D29] text-white select-none">
+      {/* 1. LAYER 1: Deep Atmospheric Gradient & Glowing Nebulae */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#150B24] via-[#2A1845] to-[#120B20] pointer-events-none" />
 
-      {/* Floating gentle stars */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {[...Array(24)].map((_, i) => (
-          <span
-            key={i}
-            className="absolute rounded-full bg-white animate-pulse"
-            style={{
-              top: `${(i * 19) % 100}%`,
-              left: `${(i * 31) % 100}%`,
-              width: `${(i % 3) + 2}px`,
-              height: `${(i % 3) + 2}px`,
-              opacity: 0.3 + ((i % 5) * 0.12),
-              animationDuration: `${2 + (i % 4)}s`,
-              animationDelay: `${(i * 0.3)}s`,
-            }}
-          />
-        ))}
+      {/* Atmospheric Nebula Glowing Orbs */}
+      <div className="absolute top-1/4 -left-20 w-[550px] h-[550px] rounded-full bg-[#76519A]/20 blur-[130px] pointer-events-none animate-pulse" style={{ animationDuration: '8s' }} />
+      <div className="absolute bottom-1/4 -right-20 w-[500px] h-[500px] rounded-full bg-[#F5A6C8]/18 blur-[120px] pointer-events-none animate-pulse" style={{ animationDuration: '10s' }} />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full bg-[#382052]/35 blur-[150px] pointer-events-none" />
+
+      {/* 2. LAYER 2: Interactive HTML5 Canvas Starfield with Shooting Stars */}
+      <StarFieldCanvas />
+
+      {/* Floating Delicate Balloons in distant corners */}
+      <div className="absolute top-12 left-6 sm:left-14 pointer-events-none opacity-30 hidden sm:block animate-floatSlow">
+        <span className="text-4xl lg:text-5xl">🎈</span>
+      </div>
+      <div className="absolute top-16 right-8 sm:right-20 pointer-events-none opacity-30 hidden sm:block animate-floatSlow" style={{ animationDelay: '2s' }}>
+        <span className="text-4xl lg:text-5xl">🎈</span>
       </div>
 
-      <div className="relative z-10 max-w-lg w-full flex flex-col items-center text-center">
-        {/* Mystery Header Tag */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-pink-200 text-xs sm:text-sm font-medium tracking-widest uppercase mb-6 shadow-lg">
+      {/* 3. TOP SECTION: Mystery Portal Header & Dialogue */}
+      <header className="relative z-20 w-full max-w-4xl mx-auto flex flex-col items-center text-center pt-2 sm:pt-4">
+        {/* Top Mystery Badge */}
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-pink-200 text-xs sm:text-sm font-medium tracking-widest uppercase mb-4 shadow-xl">
           <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-spin" style={{ animationDuration: '6s' }} />
-          <span>A Special Delivery For You</span>
+          <span>Top Secret • Birthday Portal Guardians</span>
         </div>
 
-        {/* Envelope Container */}
-        <div className="relative my-4 cursor-pointer group" onClick={handleOpen}>
-          {/* Glowing Aura */}
-          <div className="absolute -inset-4 bg-gradient-to-r from-pink-500/30 via-purple-500/30 to-amber-300/30 rounded-3xl blur-xl group-hover:opacity-100 opacity-60 transition duration-700" />
+        {/* Dynamic Fantasy Speech Bubble */}
+        <SecretSpeechBubble emotion={emotion} text={speechText} />
+      </header>
 
-          {/* Envelope Body */}
-          <div className="relative w-72 sm:w-84 h-48 sm:h-56 bg-gradient-to-tr from-[#FFF5EC] to-[#FDE8DF] rounded-2xl shadow-2xl p-4 flex flex-col justify-between border-2 border-white/60">
-            {/* Top Flap (Animated) */}
-            <div
-              className={`absolute top-0 left-0 right-0 h-28 bg-[#FEE4D6] rounded-t-2xl border-b border-amber-200/50 shadow-md origin-top transition-all duration-700 ${
-                isOpen ? 'rotate-x-180 -translate-y-2 opacity-0' : 'rotate-x-0'
-              }`}
-              style={{
-                clipPath: 'polygon(0% 0%, 100% 0%, 50% 100%)',
-              }}
+      {/* 4. MAIN CENTERPIECE: 3-Column Immersive Composition */}
+      <main className="relative z-20 w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-around gap-6 sm:gap-8 my-auto py-4">
+        {/* LEFT COLUMN: Guardian Barnaby Bear */}
+        <div className="hidden lg:flex flex-col items-center shrink-0">
+          <GuardianBearCharacter name="Barnaby" emotion={emotion} />
+        </div>
+
+        {/* CENTER COLUMN: Realistic 3D Envelope & Glass Passcode Gate */}
+        <div className="flex flex-col items-center justify-center max-w-md w-full">
+          {/* Realistic 3D Birthday Envelope */}
+          <RealisticEnvelope
+            isOpen={envelopeOpen}
+            isUnlocked={isUnlocked}
+            isError={isError}
+          />
+
+          {/* Mobile Bear Row (Displayed on tablet/mobile screens) */}
+          <div className="flex lg:hidden items-center justify-around w-full mt-5 px-4">
+            <GuardianBearCharacter name="Barnaby" emotion={emotion} className="scale-85" />
+            <GuardianBearCharacter name="Bella" emotion={emotion} className="scale-85" />
+          </div>
+
+          {/* Passcode & Tactile Keypad */}
+          <div className="mt-5 w-full flex flex-col items-center">
+            <PasscodeKeypad
+              digits={digits}
+              isUnlocked={isUnlocked}
+              isError={isError}
+              showHint={showHint}
+              onDigitChange={handleDigitChange}
+              onKeyDown={handleKeyDown}
+              onKeypadPress={handleKeypadPress}
+              onToggleHint={() => setShowHint(!showHint)}
+              onSubmit={() => validatePasscode(digits.join(''))}
+              inputRefs={inputRefs}
             />
-
-            {/* Glowing Heart / Star Wax Seal */}
-            <div
-              className={`absolute top-20 sm:top-24 left-1/2 -translate-x-1/2 z-20 flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-tr from-rose-500 to-pink-400 text-white shadow-lg transition-transform duration-500 ${
-                isOpen ? 'scale-150 opacity-0' : 'group-hover:scale-110'
-              }`}
-            >
-              <Heart className="w-6 h-6 fill-current animate-pulse text-rose-100" />
-            </div>
-
-            {/* Light beam burst on open */}
-            {isOpen && (
-              <div className="absolute inset-0 flex items-center justify-center z-30">
-                <div className="w-full h-full bg-radial from-amber-200/90 via-pink-300/40 to-transparent animate-ping" />
-              </div>
-            )}
-
-            {/* Envelope Interior Letter Peek */}
-            <div className="h-full w-full flex flex-col items-center justify-center pt-8">
-              <span className="font-script text-3xl sm:text-4xl text-slate-700 tracking-wide">
-                For Sabdha
-              </span>
-              <span className="text-[11px] font-mono tracking-widest text-slate-400 uppercase mt-1">
-                22 November 2026
-              </span>
-            </div>
           </div>
         </div>
 
-        {/* Teaser Texts */}
-        <p className="mt-8 font-serif text-lg sm:text-xl text-pink-100/90 font-light max-w-md leading-relaxed">
-          "{invitationContent.teaser}"
+        {/* RIGHT COLUMN: Guardian Bella Bear */}
+        <div className="hidden lg:flex flex-col items-center shrink-0">
+          <GuardianBearCharacter name="Bella" emotion={emotion} />
+        </div>
+      </main>
+
+      {/* 5. FOOTER: Ambient sound guidance & copyright note */}
+      <footer className="relative z-20 w-full text-center pb-2 pt-4">
+        <p className="text-xs text-purple-200/60 font-light tracking-wide">
+          Enter 2004 to prove you are the real Sabdha • Turn up your sound 🎵
         </p>
+      </footer>
 
-        <h1 className="mt-3 text-2xl sm:text-3xl font-serif font-bold text-white tracking-wide">
-          {invitationContent.question}
-        </h1>
-
-        {/* Action Button */}
-        <button
-          onClick={handleOpen}
-          disabled={isOpen}
-          className="mt-8 relative group overflow-hidden px-8 py-3.5 rounded-full bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600 text-white font-semibold text-sm sm:text-base tracking-wider uppercase shadow-xl hover:shadow-pink-500/35 hover:scale-105 active:scale-95 transition-all duration-300"
-        >
-          <span className="relative z-10 flex items-center gap-2">
-            {invitationContent.buttonText}
-          </span>
-          <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-        </button>
-
-        <p className="mt-4 text-xs text-purple-200/60 font-light">
-          Tap the envelope or button to begin • Turn up your sound 🎵
-        </p>
-      </div>
+      {/* Global CSS for floating animations */}
+      <style>{`
+        @keyframes floatSlow {
+          0%, 100% { transform: translateY(0) rotate(-1deg); }
+          50% { transform: translateY(-12px) rotate(2deg); }
+        }
+        .animate-floatSlow {
+          animation: floatSlow 5s ease-in-out infinite;
+        }
+      `}</style>
     </div>
   );
 };

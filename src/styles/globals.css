@@ -158,3 +158,12 @@
   transform: rotateY(180deg);
 }
 
+@keyframes autoProgress {
+  0% { width: 0%; }
+  100% { width: 100%; }
+}
+
+.animate-auto-progress {
+  animation: autoProgress 3s linear infinite;
+}
+

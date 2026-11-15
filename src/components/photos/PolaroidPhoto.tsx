@@ -5,7 +5,7 @@ interface PolaroidPhotoProps {
   photo: BirthdayPhoto;
   onClick?: () => void;
   className?: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'auto';
 }
 
 export const PolaroidPhoto: React.FC<PolaroidPhotoProps> = ({
@@ -15,21 +15,24 @@ export const PolaroidPhoto: React.FC<PolaroidPhotoProps> = ({
   size = 'md',
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [imgSrc, setImgSrc] = useState(photo.src);
-
   const rotation = photo.rotation || 0;
 
-  const sizeClasses = {
-    sm: 'w-48 sm:w-56',
-    md: 'w-60 sm:w-68 md:w-72',
-    lg: 'w-72 sm:w-80 md:w-96',
+  // Adapt container width based on orientation and size
+  const isLandscape = photo.orientation === 'landscape';
+
+  const widthClasses = {
+    sm: isLandscape ? 'w-64 sm:w-72' : 'w-48 sm:w-56',
+    md: isLandscape ? 'w-72 sm:w-84 md:w-96' : 'w-60 sm:w-68 md:w-76',
+    lg: isLandscape ? 'w-80 sm:w-96 md:w-[440px]' : 'w-72 sm:w-80 md:w-96',
+    auto: 'w-full',
   }[size];
 
-  const handleImageError = () => {
-    if (photo.placeholderSrc && imgSrc !== photo.placeholderSrc) {
-      setImgSrc(photo.placeholderSrc);
-    }
-  };
+  // Dynamic aspect ratio container matching photograph's real orientation
+  const aspectClass = isLandscape
+    ? 'aspect-[4/3] sm:aspect-[16/11]'
+    : photo.aspectRatio < 0.6
+    ? 'aspect-[9/16]'
+    : 'aspect-[3/4] sm:aspect-[4/5]';
 
   return (
     <div
@@ -45,10 +48,10 @@ export const PolaroidPhoto: React.FC<PolaroidPhotoProps> = ({
       style={{
         transform: `rotate(${rotation}deg)`,
       }}
-      className={`polaroid-frame group cursor-pointer transition-all duration-300 select-none ${sizeClasses} ${className}`}
+      className={`polaroid-frame group cursor-pointer transition-all duration-300 select-none ${widthClasses} ${className}`}
     >
-      {/* Photo Frame Container */}
-      <div className="relative aspect-[4/5] w-full overflow-hidden rounded bg-pink-50/50 shadow-inner">
+      {/* Photo Frame Container adapting to photo orientation */}
+      <div className={`relative ${aspectClass} w-full overflow-hidden rounded bg-pink-50/50 shadow-inner flex items-center justify-center`}>
         {/* Loading shimmer */}
         {!isLoaded && (
           <div className="absolute inset-0 bg-gradient-to-r from-pink-100/40 via-purple-100/40 to-pink-100/40 animate-pulse flex items-center justify-center">
@@ -57,22 +60,21 @@ export const PolaroidPhoto: React.FC<PolaroidPhotoProps> = ({
         )}
 
         <img
-          src={imgSrc}
+          src={photo.src}
           alt={photo.alt}
           onLoad={() => setIsLoaded(true)}
-          onError={handleImageError}
-          className={`h-full w-full object-cover object-center transition-all duration-500 group-hover:scale-105 ${
+          className={`h-full w-full object-cover object-top transition-all duration-500 group-hover:scale-105 ${
             isLoaded ? 'opacity-100' : 'opacity-0'
           }`}
           loading="lazy"
         />
 
         {/* Vintage Vignette Overlay */}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-black/10 opacity-60 group-hover:opacity-30 transition-opacity" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-black/10 opacity-50 group-hover:opacity-20 transition-opacity" />
 
-        {/* Year Badge */}
+        {/* Orientation Indicator & Year Badge */}
         {photo.year && (
-          <span className="absolute top-2 right-2 px-2 py-0.5 rounded text-[11px] font-bold tracking-wider bg-white/80 text-pink-700 shadow-sm backdrop-blur-xs">
+          <span className="absolute top-2 right-2 px-2 py-0.5 rounded text-[11px] font-bold tracking-wider bg-white/85 text-pink-700 shadow-sm backdrop-blur-xs">
             {photo.year}
           </span>
         )}
@@ -81,10 +83,10 @@ export const PolaroidPhoto: React.FC<PolaroidPhotoProps> = ({
       {/* Caption Section */}
       <div className="mt-3 px-1 text-center">
         <p className="font-script text-xl sm:text-2xl text-slate-700 leading-tight group-hover:text-pink-700 transition-colors">
-          {photo.caption}
+          "{photo.caption}"
         </p>
         {photo.tag && (
-          <span className="inline-block mt-0.5 text-[10px] uppercase tracking-widest font-semibold text-slate-600">
+          <span className="inline-block mt-0.5 text-[10px] uppercase tracking-widest font-semibold text-pink-600 bg-pink-50 px-2 py-0.5 rounded-full">
             {photo.tag}
           </span>
         )}
@@ -92,4 +94,3 @@ export const PolaroidPhoto: React.FC<PolaroidPhotoProps> = ({
     </div>
   );
 };
-
