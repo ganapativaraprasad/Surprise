@@ -134,18 +134,23 @@ export const specialTraitsCards: InteractiveCard[] = [
 ];
 
 export const personalLetter = {
-  salutation: "Dear Sabdha,",
+  salutation: "To My Favourite Person, ❤️",
   paragraphs: [
-    "Happy 22nd Birthday!",
-    "Today is all about celebrating you, your journey, your happiness, and all the beautiful moments waiting ahead.",
-    "I wanted to create something different for your birthday, something that brings together memories, smiles, and a few surprises.",
-    "I hope this little world makes your day a little more special and reminds you of how cherished you truly are.",
-    "Never stop smiling, dreaming, and being yourself. You bring so much light to everyone who knows you.",
-    "Wishing you endless happiness, boundless success, good health, and a year full of wonderful adventures.",
-    "Happy Birthday once again!",
+    "Happy Birthday, Sabdha! 🥳❤️",
+    "First of all, I just want to tell you how special you are to me and how grateful I am to have you in my life.",
+    "You know, some people enter our lives unexpectedly, but slowly become such an important part of it that we cannot imagine our days without them. You are one such person to me.",
+    "Your presence matters to me more than you probably realise. You are someone with whom I can share almost everything, whether it's happiness, sadness, random thoughts, silly conversations, personal problems, or even the smallest things happening in my life. I never have to think twice before sharing something with you, and that's something I truly value.",
+    "Thank you for being my supporter, my well-wisher, my listener, and someone who genuinely wants to see me doing well. Your words, your encouragement, and even your simple presence have made a difference in my life. Sometimes, just knowing that I have someone like you to talk to makes everything feel a little easier.",
+    "I may not express it every time, but I genuinely appreciate you. Thank you for understanding me, listening to my endless stories, supporting me during difficult times, and being there through all the ups and downs. I hope you know that you are equally important to me.",
+    "On your special day, I wish you nothing but happiness, success, peace, and endless opportunities. You have a bright future ahead of you, and I genuinely believe you are capable of achieving wonderful things. Never doubt yourself or your abilities. Keep believing in yourself, keep growing, and never stop chasing your dreams.",
+    "And remember one thing: just as you have been there for me, I'll always be there for you whenever you need me. Whether it's a happy moment you want to celebrate, a difficult situation you want to talk about, or a day when you simply need someone to listen, you can always count on me. You don't have to face everything alone.",
+    "Honestly, this friendship is one of my favourite bonds, and I wish it stays the same forever. No matter how busy life gets, how much things change, or where life takes us, I hope we never lose this connection. I want us to keep sharing stories, laughing at silly things, supporting each other, celebrating achievements, and creating countless memories together.",
+    "I don't know how to describe this bond perfectly, but I'm genuinely happy that I have you as my best friend. Some relationships don't need any particular name or explanation; they are simply special because of the people involved. And this is one of those bonds I want to cherish forever.",
+    "Thank you for being YOU. Thank you for being a beautiful part of my life.",
+    "Once again, happiest birthday! May this new chapter bring you everything your heart wishes for. Keep smiling, keep shining, and always stay the wonderful person you are.",
   ],
-  closing: "With lots of love,",
-  signature: "Your Best Friend ❤️",
+  closing: "Lots of love, care, and best wishes! ❤️",
+  signature: "Forever your best friend. 🫂",
 };
 
 export interface StarWish {

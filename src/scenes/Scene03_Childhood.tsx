@@ -4,7 +4,7 @@ import { chapterTitles } from '../data/birthdayContent';
 import { birthdayPhotos, BirthdayPhoto } from '../data/photos';
 import { childhoodInteractive } from '../data/interactiveContent';
 import { PolaroidPhoto } from '../components/photos/PolaroidPhoto';
-import { Sparkles, Heart, Star, X, ZoomIn, CheckCircle } from 'lucide-react';
+import { Sparkles, Heart, X, ZoomIn } from 'lucide-react';
 
 interface Scene03Props {
   onSelectPhoto: (photo: BirthdayPhoto) => void;
@@ -24,18 +24,7 @@ export const Scene03_Childhood: React.FC<Scene03Props> = ({
     message: string;
   } | null>(null);
 
-  // Hidden stars state
-  const [collectedStars, setCollectedStars] = useState<number[]>([]);
-  const [revealedStarMessage, setRevealedStarMessage] = useState<string | null>(null);
-
-  const handleStarClick = (star: { id: number; message: string }) => {
-    if (!collectedStars.includes(star.id)) {
-      setCollectedStars((prev) => [...prev, star.id]);
-    }
-    setRevealedStarMessage(star.message);
-  };
-
-  const isAllStarsCollected = collectedStars.length === childhoodInteractive.hiddenStars.length;
+  const extraNote = activeMemory && childhoodInteractive.extraNotes[photos.findIndex((photo) => photo.id === activeMemory.photo.id)];
 
   return (
     <div className="album-page">
@@ -58,63 +47,17 @@ export const Scene03_Childhood: React.FC<Scene03Props> = ({
           {chapter.subtitle}
         </p>
 
-        {/* Interactive Stats & Star Collector Badge */}
+        {/* Photo discovery hint */}
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
           <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white shadow-xs border border-pink-200 text-xs font-semibold text-slate-600">
             <Heart className="w-3.5 h-3.5 fill-current text-pink-500" />
             <span>Tap any photo to discover its secret memory</span>
           </div>
 
-          <div
-            className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold shadow-xs transition-all ${
-              isAllStarsCollected
-                ? 'bg-amber-400 text-slate-900 shadow-[0_0_15px_rgba(251,191,36,0.5)]'
-                : 'bg-amber-50 text-amber-800 border border-amber-200'
-            }`}
-          >
-            <Star className={`w-3.5 h-3.5 ${isAllStarsCollected ? 'fill-current animate-spin' : 'fill-amber-400 text-amber-500'}`} />
-            <span>
-              {isAllStarsCollected
-                ? 'All 5 Stars Discovered! ✨'
-                : `Hidden Stars: ${collectedStars.length} / 5 Found`}
-            </span>
-          </div>
         </div>
       </div>
 
-      {/* Star Collector Reward Banner */}
-      {isAllStarsCollected && (
-        <div className="relative z-20 max-w-xl mx-auto mb-10 p-4 rounded-2xl bg-gradient-to-r from-amber-100 via-pink-100 to-purple-100 border border-amber-300 text-center shadow-lg animate-fadeIn">
-          <div className="flex items-center justify-center gap-2 text-amber-800 font-bold text-sm sm:text-base">
-            <Sparkles className="w-5 h-5 text-amber-500 animate-bounce" />
-            <span>{childhoodInteractive.allStarsReward}</span>
-            <Sparkles className="w-5 h-5 text-amber-500 animate-bounce" />
-          </div>
-        </div>
-      )}
-
-      {/* Dynamic Scrapbook Container with ALL 11 Photos & 5 Hidden Stars */}
       <div className="relative z-10 max-w-7xl mx-auto">
-        {/* Hidden Interactive Stars Scattered Across the Scrapbook */}
-        {childhoodInteractive.hiddenStars.map((star) => {
-          const isCollected = collectedStars.includes(star.id);
-          return (
-            <button
-              key={star.id}
-              onClick={() => handleStarClick(star)}
-              title={isCollected ? 'Star already found!' : 'Find secret star!'}
-              style={{ left: star.x, top: star.y }}
-              className={`absolute z-30 p-2.5 rounded-full transition-all duration-300 ${
-                isCollected
-                  ? 'bg-amber-300 text-amber-900 scale-110 shadow-[0_0_15px_rgba(251,191,36,0.6)] cursor-default'
-                  : 'bg-white/80 hover:bg-amber-100 text-amber-500 shadow-md hover:scale-125 animate-pulse cursor-pointer'
-              }`}
-            >
-              <Star className="w-4 h-4 fill-current" />
-            </button>
-          );
-        })}
-
         {/* Section 1: Top Featured Showcase (First 3 Photos) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10 items-start justify-items-center mb-12">
           {photos.slice(0, 3).map((photo, index) => {
@@ -241,6 +184,8 @@ export const Scene03_Childhood: React.FC<Scene03Props> = ({
               "{activeMemory.message}"
             </p>
 
+            {extraNote && <p className="mb-2 text-sm leading-relaxed text-slate-600">{extraNote}</p>}
+
             <div className="photo-mat w-52 max-w-full h-40 rounded-lg my-3 border border-pink-200">
               <img
                 src={activeMemory.photo.src}
@@ -272,43 +217,6 @@ export const Scene03_Childhood: React.FC<Scene03Props> = ({
         </StoryDialog>
       )}
 
-      {/* Interaction 2: Star Message Modal */}
-      {revealedStarMessage && (
-        <StoryDialog
-          label="Hidden star"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn"
-          onDismiss={() => setRevealedStarMessage(null)}
-        >
-          <div
-            className="relative w-full max-w-sm bg-gradient-to-b from-amber-50 to-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-amber-300 text-center flex flex-col items-center"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="w-16 h-16 rounded-full bg-amber-400 text-slate-900 flex items-center justify-center shadow-lg mb-4 animate-bounce">
-              <Star className="w-8 h-8 fill-current" />
-            </div>
-
-            <span className="text-xs font-mono font-bold uppercase tracking-widest text-amber-700">
-              Hidden Star Discovered!
-            </span>
-
-            <p className="font-serif text-lg font-bold text-slate-800 mt-2 mb-4">
-              "{revealedStarMessage}"
-            </p>
-
-            <div className="flex items-center gap-1 text-xs text-amber-700 font-semibold mb-6">
-              <CheckCircle className="w-4 h-4 text-emerald-500" />
-              <span>{collectedStars.length} of 5 stars collected</span>
-            </div>
-
-            <button
-              onClick={() => setRevealedStarMessage(null)}
-              className="px-6 py-2 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold uppercase tracking-wider shadow-md hover:scale-105 transition-all"
-            >
-              Continue Exploring
-            </button>
-          </div>
-        </StoryDialog>
-      )}
     </div>
   );
 };

@@ -79,6 +79,9 @@ export const Scene01_Invitation: React.FC<Scene01Props> = ({
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [envelopeOpen, setEnvelopeOpen] = useState(false);
   const [showHint, setShowHint] = useState(false);
+  const resetDigitsTimer = useRef<number>();
+  const envelopeTimer = useRef<number>();
+  const nextSceneTimer = useRef<number>();
   const [speechText, setSpeechText] = useState(
     'Halt, Queen Sabdha! 🧸 Security Bears Barnaby & Bella here! Only the birthday girl knows the secret 4-digit Birth Year code to unlock this universe! Enter your birth year below 👇'
   );
@@ -97,11 +100,23 @@ export const Scene01_Invitation: React.FC<Scene01Props> = ({
         inputRefs[0].current?.focus({ preventScroll: true });
       }
     }, 600);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      window.clearTimeout(resetDigitsTimer.current);
+      window.clearTimeout(envelopeTimer.current);
+      window.clearTimeout(nextSceneTimer.current);
+    };
+  }, []);
+
+  const clearError = useCallback(() => {
+    window.clearTimeout(resetDigitsTimer.current);
+    setIsError(false);
   }, []);
 
   const validatePasscode = useCallback(
     (enteredCode: string) => {
+      if (isUnlocked) return;
+      window.clearTimeout(resetDigitsTimer.current);
       if (enteredCode === CORRECT_PASSCODE) {
         // CORRECT PASSCODE (2004)
         setIsError(false);
@@ -122,12 +137,12 @@ export const Scene01_Invitation: React.FC<Scene01Props> = ({
           colors: ['#F472B6', '#FBBF24', '#A855F7', '#38BDF8', '#EC4899', '#FFF0E5'],
         });
 
-        setTimeout(() => {
+        envelopeTimer.current = window.setTimeout(() => {
           setEnvelopeOpen(true);
           onPlayEnvelopeSfx();
         }, 800);
 
-        setTimeout(() => {
+        nextSceneTimer.current = window.setTimeout(() => {
           onOpenSurprise();
         }, 2500);
       } else {
@@ -146,18 +161,19 @@ export const Scene01_Invitation: React.FC<Scene01Props> = ({
         }
 
         // Reset after shake
-        setTimeout(() => {
+        resetDigitsTimer.current = window.setTimeout(() => {
           setIsError(false);
           setDigits(['', '', '', '']);
-          inputRefs[0].current?.focus();
+          inputRefs[0].current?.focus({ preventScroll: true });
         }, 1800);
       }
     },
-    [onOpenSurprise, onPlayEnvelopeSfx]
+    [isUnlocked, onOpenSurprise, onPlayEnvelopeSfx]
   );
 
   const handleDigitChange = (index: number, value: string) => {
     if (isUnlocked) return;
+    if (isError) clearError();
 
     const cleaned = value.replace(/[^0-9]/g, '');
     const char = cleaned.slice(-1);
@@ -199,6 +215,7 @@ export const Scene01_Invitation: React.FC<Scene01Props> = ({
     if (isUnlocked) return;
 
     if (val === 'clear') {
+      clearError();
       setDigits(['', '', '', '']);
       inputRefs[0].current?.focus();
       setEmotion('idle');
@@ -207,6 +224,7 @@ export const Scene01_Invitation: React.FC<Scene01Props> = ({
     }
 
     if (val === 'backspace') {
+      if (isError) clearError();
       const lastIndex = digits.reduce((acc, curr, idx) => (curr ? idx : acc), -1);
       if (lastIndex >= 0) {
         const newDigits = [...digits];
@@ -222,6 +240,13 @@ export const Scene01_Invitation: React.FC<Scene01Props> = ({
       handleDigitChange(emptyIndex, val);
     }
   };
+
+  const guardians = (
+    <>
+      <GuardianBearCharacter name="Barnaby" emotion={emotion} />
+      <GuardianBearCharacter name="Bella" emotion={emotion} />
+    </>
+  );
 
   return (
     <div className="invitation-page">
@@ -252,6 +277,7 @@ export const Scene01_Invitation: React.FC<Scene01Props> = ({
         </section>
         <section className="invitation-access" aria-label="Birthday passcode">
           <SecretSpeechBubble emotion={emotion} text={speechText} />
+          <div className="invitation-guardians-compact">{guardians}</div>
           <PasscodeKeypad
             digits={digits}
             isUnlocked={isUnlocked}
@@ -265,10 +291,7 @@ export const Scene01_Invitation: React.FC<Scene01Props> = ({
             inputRefs={inputRefs}
           />
         </section>
-        <div className="invitation-guardians">
-          <GuardianBearCharacter name="Barnaby" emotion={emotion} />
-          <GuardianBearCharacter name="Bella" emotion={emotion} />
-        </div>
+        <div className="invitation-guardians">{guardians}</div>
       </div>
 
       {/* 5. FOOTER: Ambient sound guidance & copyright note */}

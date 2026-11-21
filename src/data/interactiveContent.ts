@@ -16,15 +16,14 @@ export const childhoodInteractive = {
     "Treasured moments that still warm the heart.",
     "A beautiful soul blossoming with every step.",
   ],
-  // 5 Hidden Stars in Chapter 01
-  hiddenStars: [
-    { id: 1, message: "Star of Pure Joy: Your childhood laugh could brighten any gray day! ✨", x: '18%', y: '28%' },
-    { id: 2, message: "Star of Wonder: Never lose that innocent curiosity about the world! 🌟", x: '78%', y: '24%' },
-    { id: 3, message: "Star of Kindness: Even from little steps, you had the gentlest heart. 💫", x: '42%', y: '52%' },
-    { id: 4, message: "Star of Magic: Every small childhood memory has turned into gold. ✨", x: '88%', y: '68%' },
-    { id: 5, message: "Star of Beginnings: Look at where you started, and look at you now! 🌟", x: '12%', y: '74%' },
+  extraNotes: [
+    "Star of Pure Joy: Your childhood laugh could brighten any gray day! ✨",
+    "Star of Wonder: Never lose that innocent curiosity about the world! 🌟",
+    "Star of Kindness: Even from little steps, you had the gentlest heart. 💫",
+    "Star of Magic: Every small childhood memory has turned into gold. ✨",
+    "Star of Beginnings: Look at where you started, and look at you now! 🌟",
+    "You've always brought pure light wherever you go!",
   ],
-  allStarsReward: "You found all the little stars! ✨ You've always brought pure light wherever you go!",
 };
 
 export const growingUpInteractive = {
@@ -103,14 +102,14 @@ export const ourMemoriesInteractive = {
       "Some memories become special simply because we share them with the right people. I'm glad we have our own little collection of moments. Here's to many more memories, smiles, and adventures ahead.",
     signature: "Always your best friend ❤️",
   },
-  constellationStars: [
-    { id: 1, message: "Memory 1: The laughter that never stopped! 💫" },
-    { id: 2, message: "Memory 2: Inside jokes that only we understand. ✨" },
-    { id: 3, message: "Memory 3: Being there through thick and thin. 🌟" },
-    { id: 4, message: "Memory 4: Midnight chats and endless smiles. 💖" },
-    { id: 5, message: "Memory 5: A bond that distance or time can never change. 🌙" },
+  extraNotes: [
+    "Memory 1: The laughter that never stopped! 💫",
+    "Memory 2: Inside jokes that only we understand. ✨",
+    "Memory 3: Being there through thick and thin. 🌟",
+    "Memory 4: Midnight chats and endless smiles. 💖",
+    "Memory 5: A bond that distance or time can never change. 🌙",
+    "Our little world is made of beautiful memories. ❤️",
   ],
-  allConstellationComplete: "Our little world is made of beautiful memories. ❤️",
 };
 
 export const whatMakesYouYouInteractive = {

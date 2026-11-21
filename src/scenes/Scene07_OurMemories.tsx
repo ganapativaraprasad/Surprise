@@ -3,7 +3,7 @@ import { StoryDialog } from '../components/common/StoryDialog';
 import { chapterTitles } from '../data/birthdayContent';
 import { birthdayPhotos, BirthdayPhoto } from '../data/photos';
 import { ourMemoriesInteractive } from '../data/interactiveContent';
-import { Heart, ChevronLeft, ChevronRight, Mail, Star, X, ZoomIn } from 'lucide-react';
+import { Heart, ChevronLeft, ChevronRight, Mail, X, ZoomIn } from 'lucide-react';
 
 interface Scene07Props {
   onSelectPhoto: (photo: BirthdayPhoto) => void;
@@ -27,10 +27,6 @@ export const Scene07_OurMemories: React.FC<Scene07Props> = ({
   // Sealed personal letter at the end
   const [isLetterOpened, setIsLetterOpened] = useState(false);
 
-  // 5 Constellation stars state
-  const [collectedConstellation, setCollectedConstellation] = useState<number[]>([]);
-  const [activeConstellationStar, setActiveConstellationStar] = useState<string | null>(null);
-
   const handleNextPhoto = () => {
     setCarouselIdx((prev) => (prev + 1) % photos.length);
   };
@@ -38,16 +34,6 @@ export const Scene07_OurMemories: React.FC<Scene07Props> = ({
   const handlePrevPhoto = () => {
     setCarouselIdx((prev) => (prev - 1 + photos.length) % photos.length);
   };
-
-  const handleCollectStar = (star: { id: number; message: string }) => {
-    if (!collectedConstellation.includes(star.id)) {
-      setCollectedConstellation((prev) => [...prev, star.id]);
-    }
-    setActiveConstellationStar(star.message);
-  };
-
-  const isConstellationComplete =
-    collectedConstellation.length === ourMemoriesInteractive.constellationStars.length;
 
   return (
     <div className="album-page">
@@ -70,53 +56,7 @@ export const Scene07_OurMemories: React.FC<Scene07Props> = ({
           {chapter.subtitle}
         </p>
 
-        {/* Memory Constellation Progress Badge */}
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-          <div
-            className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold shadow-xs transition-all ${
-              isConstellationComplete
-                ? 'bg-rose-500 text-white shadow-lg shadow-rose-300'
-                : 'bg-rose-50 text-rose-700 border border-rose-200'
-            }`}
-          >
-            <Star className={`w-3.5 h-3.5 ${isConstellationComplete ? 'fill-current' : 'text-rose-500'}`} />
-            <span>
-              {isConstellationComplete
-                ? ourMemoriesInteractive.allConstellationComplete
-                : `Memory Constellation: ${collectedConstellation.length} / 5 Stars Found`}
-            </span>
-          </div>
-        </div>
       </div>
-
-      {/* Hidden Constellation Stars Scattered in the Scene */}
-      {ourMemoriesInteractive.constellationStars.map((star, idx) => {
-        const isFound = collectedConstellation.includes(star.id);
-        const positions = [
-          { top: '18%', left: '10%' },
-          { top: '24%', right: '12%' },
-          { top: '55%', left: '8%' },
-          { top: '65%', right: '10%' },
-          { top: '78%', left: '16%' },
-        ];
-        const pos = positions[idx % positions.length];
-
-        return (
-          <button
-            key={star.id}
-            onClick={() => handleCollectStar(star)}
-            style={pos}
-            className={`absolute z-30 p-2.5 rounded-full transition-all duration-300 ${
-              isFound
-                ? 'bg-rose-400 text-white scale-110 shadow-[0_0_15px_rgba(244,114,182,0.8)] cursor-default'
-                : 'bg-white hover:bg-rose-50 text-rose-400 shadow-md hover:scale-125 animate-pulse cursor-pointer'
-            }`}
-            title="Collect memory star"
-          >
-            <Star className="w-4 h-4 fill-current" />
-          </button>
-        );
-      })}
 
       {/* Shared photo album */}
       <div className="relative z-10 max-w-5xl mx-auto my-12">
@@ -277,6 +217,10 @@ export const Scene07_OurMemories: React.FC<Scene07Props> = ({
               "{ourMemoriesInteractive.personalCaptions[activeNoteIdx % ourMemoriesInteractive.personalCaptions.length]}"
             </p>
 
+            {ourMemoriesInteractive.extraNotes[activeNoteIdx] && (
+              <p className="mb-4 text-sm leading-relaxed text-slate-600">{ourMemoriesInteractive.extraNotes[activeNoteIdx]}</p>
+            )}
+
             <button
               onClick={() => setActiveNoteIdx(null)}
               className="px-6 py-2 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold uppercase tracking-wider shadow-md hover:scale-105 transition-all"
@@ -287,38 +231,6 @@ export const Scene07_OurMemories: React.FC<Scene07Props> = ({
         </StoryDialog>
       )}
 
-      {/* Constellation Star Modal */}
-      {activeConstellationStar && (
-        <StoryDialog
-          label="Constellation star"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn"
-          onDismiss={() => setActiveConstellationStar(null)}
-        >
-          <div
-            className="relative w-full max-w-sm bg-gradient-to-b from-rose-50 to-white rounded-3xl p-6 shadow-2xl border border-rose-300 text-center flex flex-col items-center"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="w-14 h-14 rounded-full bg-rose-500 text-white flex items-center justify-center shadow-lg mb-3 animate-bounce">
-              <Star className="w-7 h-7 fill-current" />
-            </div>
-
-            <span className="text-xs font-mono font-bold uppercase tracking-widest text-rose-600">
-              Constellation Star Unlocked
-            </span>
-
-            <p className="font-serif text-lg font-bold text-slate-800 mt-2 mb-4">
-              {activeConstellationStar}
-            </p>
-
-            <button
-              onClick={() => setActiveConstellationStar(null)}
-              className="px-6 py-2 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold uppercase tracking-wider"
-            >
-              Continue
-            </button>
-          </div>
-        </StoryDialog>
-      )}
     </div>
   );
 };

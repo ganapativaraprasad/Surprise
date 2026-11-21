@@ -802,12 +802,12 @@ export const birthdayPhotos: BirthdayPhotoCollection = {
 
   finale: {
     id: "finale-portrait",
-    src: "/photos/finale/photo-01.jpg",
+    src: "/photos/finale/sabdha-at-22.png",
     caption: "Under the starlit sky, celebrating 22 years of beautiful you.",
     alt: "Sabdha 22nd birthday finale portrait",
-    width: 1200,
-    height: 1600,
-    aspectRatio: 0.75,
+    width: 720,
+    height: 1280,
+    aspectRatio: 0.56,
     orientation: "portrait",
     tag: "Sabdha at 22"
   }

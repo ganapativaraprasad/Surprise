@@ -147,9 +147,14 @@ export const Scene09_BirthdayLetter: React.FC<Scene09Props> = ({
               ))}
             </div>
 
-            {/* Tucked Keepsake Photograph & Handwritten Signature */}
-            {letterPhoto ? (
-              <div className="mt-8 pt-6 border-t border-amber-200/50 flex flex-col sm:flex-row items-center justify-between gap-6 bg-amber-50/40 p-4 rounded-2xl border border-amber-200/40">
+            <div className="mt-8 flex flex-col items-start">
+              <p className="font-serif text-base text-slate-600 italic">{letter.closing}</p>
+              <p className="font-script text-3xl sm:text-4xl text-rose-600 font-bold mt-1">{letter.signature}</p>
+            </div>
+
+            {/* Tucked Keepsake Photograph */}
+            {letterPhoto && (
+              <div className="mt-8 bg-amber-50/40 p-4 rounded-2xl border border-amber-200/40">
                 <div className="flex items-center gap-3">
                   <div
                     onClick={() => onSelectPhoto?.(letterPhoto)}
@@ -177,23 +182,6 @@ export const Scene09_BirthdayLetter: React.FC<Scene09Props> = ({
                   </div>
                 </div>
 
-                <div className="flex flex-col items-end shrink-0 sm:self-end">
-                  <span className="font-serif text-base text-slate-600 italic">
-                    {letter.closing}
-                  </span>
-                  <span className="font-script text-3xl sm:text-4xl text-rose-600 font-bold mt-1">
-                    {letter.signature}
-                  </span>
-                </div>
-              </div>
-            ) : (
-              <div className="mt-8 pt-6 border-t border-amber-200/40 flex flex-col items-end">
-                <span className="font-serif text-base text-slate-600 italic">
-                  {letter.closing}
-                </span>
-                <span className="font-script text-3xl sm:text-4xl text-rose-600 font-bold mt-1">
-                  {letter.signature}
-                </span>
               </div>
             )}
 
