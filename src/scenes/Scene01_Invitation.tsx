@@ -93,7 +93,9 @@ export const Scene01_Invitation: React.FC<Scene01Props> = ({
   // Auto-focus first input on load
   useEffect(() => {
     const timer = setTimeout(() => {
-      inputRefs[0].current?.focus();
+      if (window.matchMedia('(pointer: fine)').matches) {
+        inputRefs[0].current?.focus({ preventScroll: true });
+      }
     }, 600);
     return () => clearTimeout(timer);
   }, []);
@@ -113,6 +115,7 @@ export const Scene01_Invitation: React.FC<Scene01Props> = ({
 
         // Confetti burst
         confetti({
+          disableForReducedMotion: true,
           particleCount: 140,
           spread: 90,
           origin: { y: 0.6 },
@@ -221,9 +224,9 @@ export const Scene01_Invitation: React.FC<Scene01Props> = ({
   };
 
   return (
-    <div className="relative w-full min-h-[100svh] flex flex-col justify-between items-center px-4 sm:px-6 lg:px-12 py-6 sm:py-8 overflow-x-hidden bg-[#170D29] text-white select-none">
+    <div className="invitation-page">
       {/* 1. LAYER 1: Deep Atmospheric Gradient & Glowing Nebulae */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#150B24] via-[#2A1845] to-[#120B20] pointer-events-none" />
+      <div className="invitation-sky" />
 
       {/* Atmospheric Nebula Glowing Orbs */}
       <div className="absolute top-1/4 -left-20 w-[550px] h-[550px] rounded-full bg-[#76519A]/20 blur-[130px] pointer-events-none animate-pulse" style={{ animationDuration: '8s' }} />
@@ -241,62 +244,32 @@ export const Scene01_Invitation: React.FC<Scene01Props> = ({
         <span className="text-4xl lg:text-5xl">🎈</span>
       </div>
 
-      {/* 3. TOP SECTION: Mystery Portal Header & Dialogue */}
-      <header className="relative z-20 w-full max-w-4xl mx-auto flex flex-col items-center text-center pt-2 sm:pt-4">
-        {/* Top Mystery Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-pink-200 text-xs sm:text-sm font-medium tracking-widest uppercase mb-4 shadow-xl">
-          <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-spin" style={{ animationDuration: '6s' }} />
-          <span>Top Secret • Birthday Portal Guardians</span>
-        </div>
-
-        {/* Dynamic Fantasy Speech Bubble */}
-        <SecretSpeechBubble emotion={emotion} text={speechText} />
-      </header>
-
-      {/* 4. MAIN CENTERPIECE: 3-Column Immersive Composition */}
-      <main className="relative z-20 w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-around gap-6 sm:gap-8 my-auto py-4">
-        {/* LEFT COLUMN: Guardian Barnaby Bear */}
-        <div className="hidden lg:flex flex-col items-center shrink-0">
-          <GuardianBearCharacter name="Barnaby" emotion={emotion} />
-        </div>
-
-        {/* CENTER COLUMN: Realistic 3D Envelope & Glass Passcode Gate */}
-        <div className="flex flex-col items-center justify-center max-w-md w-full">
-          {/* Realistic 3D Birthday Envelope */}
-          <RealisticEnvelope
-            isOpen={envelopeOpen}
+      <div className="invitation-spread">
+        <section className="invitation-cover" aria-labelledby="invitation-title">
+          <p className="story-eyebrow"><Sparkles size={15} /> Top Secret • Birthday Portal Guardians</p>
+          <h1 id="invitation-title">A Little Universe<br /><em>of Memories</em></h1>
+          <RealisticEnvelope isOpen={envelopeOpen} isUnlocked={isUnlocked} isError={isError} />
+        </section>
+        <section className="invitation-access" aria-label="Birthday passcode">
+          <SecretSpeechBubble emotion={emotion} text={speechText} />
+          <PasscodeKeypad
+            digits={digits}
             isUnlocked={isUnlocked}
             isError={isError}
+            showHint={showHint}
+            onDigitChange={handleDigitChange}
+            onKeyDown={handleKeyDown}
+            onKeypadPress={handleKeypadPress}
+            onToggleHint={() => setShowHint(!showHint)}
+            onSubmit={() => validatePasscode(digits.join(''))}
+            inputRefs={inputRefs}
           />
-
-          {/* Mobile Bear Row (Displayed on tablet/mobile screens) */}
-          <div className="flex lg:hidden items-center justify-around w-full mt-5 px-4">
-            <GuardianBearCharacter name="Barnaby" emotion={emotion} className="scale-85" />
-            <GuardianBearCharacter name="Bella" emotion={emotion} className="scale-85" />
-          </div>
-
-          {/* Passcode & Tactile Keypad */}
-          <div className="mt-5 w-full flex flex-col items-center">
-            <PasscodeKeypad
-              digits={digits}
-              isUnlocked={isUnlocked}
-              isError={isError}
-              showHint={showHint}
-              onDigitChange={handleDigitChange}
-              onKeyDown={handleKeyDown}
-              onKeypadPress={handleKeypadPress}
-              onToggleHint={() => setShowHint(!showHint)}
-              onSubmit={() => validatePasscode(digits.join(''))}
-              inputRefs={inputRefs}
-            />
-          </div>
-        </div>
-
-        {/* RIGHT COLUMN: Guardian Bella Bear */}
-        <div className="hidden lg:flex flex-col items-center shrink-0">
+        </section>
+        <div className="invitation-guardians">
+          <GuardianBearCharacter name="Barnaby" emotion={emotion} />
           <GuardianBearCharacter name="Bella" emotion={emotion} />
         </div>
-      </main>
+      </div>
 
       {/* 5. FOOTER: Ambient sound guidance & copyright note */}
       <footer className="relative z-20 w-full text-center pb-2 pt-4">

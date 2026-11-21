@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { useReducedMotion } from '../../hooks/useReducedMotion';
 
 interface Star {
   x: number;
@@ -24,6 +25,7 @@ interface ShootingStar {
 
 export const StarFieldCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const reducedMotion = useReducedMotion();
   const mouseRef = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 });
 
   useEffect(() => {
@@ -32,29 +34,30 @@ export const StarFieldCanvas: React.FC = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    let animationFrameId: number;
-    let width = (canvas.width = window.innerWidth);
-    let height = (canvas.height = window.innerHeight);
+    let animationFrameId = 0;
+    let width = (canvas.width = canvas.clientWidth);
+    let height = (canvas.height = canvas.clientHeight);
 
     const handleResize = () => {
       if (!canvas) return;
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
+      width = canvas.width = canvas.clientWidth;
+      height = canvas.height = canvas.clientHeight;
       initStars();
+      if (reducedMotion) render();
     };
 
     const handleMouseMove = (e: MouseEvent) => {
       // Gentle parallax target (-1 to 1)
       mouseRef.current.targetX = (e.clientX / width - 0.5) * 30;
-      mouseRef.current.targetY = (e.clientY / height - 0.5) * 20;
+      mouseRef.current.targetY = (e.clientY / window.innerHeight - 0.5) * 20;
     };
 
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('mousemove', handleMouseMove);
+    const observer = new ResizeObserver(handleResize);
+    observer.observe(canvas);
+    if (!reducedMotion) window.addEventListener('mousemove', handleMouseMove);
 
     // Initialize Stars
     let stars: Star[] = [];
-    const starCount = Math.min(320, Math.floor((width * height) / 3600));
 
     const starColors = [
       '#FFFFFF',
@@ -66,6 +69,7 @@ export const StarFieldCanvas: React.FC = () => {
 
     const initStars = () => {
       stars = [];
+      const starCount = Math.min(320, Math.floor((width * height) / 3600));
       for (let i = 0; i < starCount; i++) {
         const isBright = Math.random() < 0.08;
         stars.push({
@@ -200,17 +204,17 @@ export const StarFieldCanvas: React.FC = () => {
       }
 
       ctx.globalAlpha = 1;
-      animationFrameId = requestAnimationFrame(render);
+      if (!reducedMotion) animationFrameId = requestAnimationFrame(render);
     };
 
     render();
 
     return () => {
-      window.removeEventListener('resize', handleResize);
+      observer.disconnect();
       window.removeEventListener('mousemove', handleMouseMove);
       cancelAnimationFrame(animationFrameId);
     };
-  }, []);
+  }, [reducedMotion]);
 
   return (
     <canvas

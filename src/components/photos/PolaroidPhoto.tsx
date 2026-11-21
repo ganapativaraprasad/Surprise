@@ -51,7 +51,7 @@ export const PolaroidPhoto: React.FC<PolaroidPhotoProps> = ({
       className={`polaroid-frame group cursor-pointer transition-all duration-300 select-none ${widthClasses} ${className}`}
     >
       {/* Photo Frame Container adapting to photo orientation */}
-      <div className={`relative ${aspectClass} w-full overflow-hidden rounded bg-pink-50/50 shadow-inner flex items-center justify-center`}>
+      <div className={`photo-mat relative ${aspectClass} w-full rounded`}>
         {/* Loading shimmer */}
         {!isLoaded && (
           <div className="absolute inset-0 bg-gradient-to-r from-pink-100/40 via-purple-100/40 to-pink-100/40 animate-pulse flex items-center justify-center">
@@ -63,14 +63,12 @@ export const PolaroidPhoto: React.FC<PolaroidPhotoProps> = ({
           src={photo.src}
           alt={photo.alt}
           onLoad={() => setIsLoaded(true)}
-          className={`h-full w-full object-cover object-top transition-all duration-500 group-hover:scale-105 ${
+          className={`photo-fit h-full w-full transition-opacity duration-300 ${
             isLoaded ? 'opacity-100' : 'opacity-0'
           }`}
           loading="lazy"
         />
 
-        {/* Vintage Vignette Overlay */}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-black/10 opacity-50 group-hover:opacity-20 transition-opacity" />
 
         {/* Orientation Indicator & Year Badge */}
         {photo.year && (

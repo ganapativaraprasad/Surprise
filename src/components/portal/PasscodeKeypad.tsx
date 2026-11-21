@@ -53,6 +53,8 @@ export const PasscodeKeypad: React.FC<PasscodeKeypadProps> = ({
                 type="text"
                 inputMode="numeric"
                 pattern="[0-9]*"
+                aria-label={`Birth year digit ${index + 1}`}
+                aria-invalid={isError}
                 maxLength={1}
                 value={digit}
                 disabled={isUnlocked}
@@ -85,6 +87,8 @@ export const PasscodeKeypad: React.FC<PasscodeKeypadProps> = ({
         <button
           type="button"
           onClick={onToggleHint}
+          aria-expanded={showHint}
+          aria-controls={showHint ? 'passcode-hint' : undefined}
           className="inline-flex items-center gap-1.5 text-xs text-pink-300/80 hover:text-pink-200 transition-colors py-1 px-3 rounded-full hover:bg-white/5"
         >
           <HelpCircle className="w-3.5 h-3.5 text-amber-300" />
@@ -94,7 +98,7 @@ export const PasscodeKeypad: React.FC<PasscodeKeypadProps> = ({
         </button>
 
         {showHint && (
-          <div className="mt-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-purple-950/90 to-slate-900/90 border border-amber-300/40 text-amber-200 text-xs font-sans text-center shadow-xl backdrop-blur-md animate-fadeIn max-w-xs">
+          <div id="passcode-hint" className="mt-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-purple-950/90 to-slate-900/90 border border-amber-300/40 text-amber-200 text-xs font-sans text-center shadow-xl backdrop-blur-md animate-fadeIn max-w-xs">
             <p className="font-serif italic">
               "The universe was blessed on 22 November 2004... enter the birth year: <strong className="text-amber-300 font-mono tracking-widest font-bold">2 0 0 4</strong> ✨"
             </p>
@@ -112,6 +116,7 @@ export const PasscodeKeypad: React.FC<PasscodeKeypadProps> = ({
             <button
               key={key}
               type="button"
+              aria-label={isBack ? 'Delete last digit' : undefined}
               disabled={isUnlocked}
               onClick={() => onKeypadPress(key)}
               className={`h-11 sm:h-12 rounded-2xl font-mono font-bold text-base transition-all duration-150 active:scale-95 flex items-center justify-center select-none backdrop-blur-md shadow-md ${

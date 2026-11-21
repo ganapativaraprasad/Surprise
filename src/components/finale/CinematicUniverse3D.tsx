@@ -1,25 +1,31 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
+import { useReducedMotion } from '../../hooks/useReducedMotion';
 
 export interface CinematicUniverse3DProps {
+  constellationSlot: React.RefObject<HTMLDivElement>;
   onOpenWishes: () => void;
   onPlayWaterDrop: () => void;
   onPlayStarCollect: () => void;
 }
 
 export const CinematicUniverse3D: React.FC<CinematicUniverse3DProps> = ({
+  constellationSlot,
   onOpenWishes,
   onPlayWaterDrop,
   onPlayStarCollect,
 }) => {
   const mountRef = useRef<HTMLDivElement>(null);
+  const [hasFallback, setHasFallback] = useState(false);
+  const reducedMotion = useReducedMotion();
 
   // Active ripples list for water shader
   const ripplesRef = useRef<{ x: number; y: number; time: number }[]>([]);
 
   useEffect(() => {
     const container = mountRef.current;
-    if (!container) return;
+    const nameSlot = constellationSlot.current;
+    if (!container || !nameSlot) return;
 
     let width = container.clientWidth || window.innerWidth;
     let height = container.clientHeight || window.innerHeight;
@@ -31,12 +37,16 @@ export const CinematicUniverse3D: React.FC<CinematicUniverse3DProps> = ({
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
     camera.position.set(0, 1.8, 38);
     camera.lookAt(0, 4, 0);
+    camera.updateMatrixWorld();
 
-    const renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      alpha: true,
-      powerPreference: 'high-performance',
-    });
+    let renderer: THREE.WebGLRenderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    } catch {
+      setHasFallback(true);
+      return;
+    }
+    setHasFallback(false);
     renderer.setSize(width, height);
     // Optimized adaptive pixel ratio to ensure 60fps on both desktop and mobile devices
     const isMobile = typeof window !== 'undefined' && (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768);
@@ -307,15 +317,18 @@ export const CinematicUniverse3D: React.FC<CinematicUniverse3DProps> = ({
         float moonBeam = exp(-distFromMoonCol * distFromMoonCol * 0.025);
         float moonBeamIntensity = smoothstep(0.0, 1.0, 1.0 - vUv.y * 0.8) * moonBeam;
         
-        float shimmer = sin(vWorldPosition.x * 2.0 + vWorldPosition.z * 4.0 + uTime * 3.5);
-        shimmer = pow(max(0.0, shimmer), 6.0) * 0.7;
+        vec2 water = vWorldPosition.xz;
+        float chop = sin(water.x * 1.35 + water.y * 0.45 - uTime * 0.7);
+        float crest = sin(water.y * 4.7 + chop * 1.5 + uTime * 1.9);
+        float crossCurrent = sin(water.x * 2.1 - water.y * 2.8 + uTime * 1.2);
+        float shimmer = pow(max(0.0, crest), 4.0) * smoothstep(-0.55, 0.85, crossCurrent);
 
         vec3 moonLightColor = vec3(0.96, 0.93, 0.85);
         vec3 goldAccent = vec3(0.96, 0.84, 0.55);
 
         vec3 finalColor = waterColor;
-        finalColor += moonLightColor * moonBeamIntensity * 0.85;
-        finalColor += goldAccent * (moonBeamIntensity * shimmer) * 0.9;
+        finalColor += moonLightColor * moonBeamIntensity * 0.5;
+        finalColor += goldAccent * (moonBeamIntensity * shimmer) * 0.82;
         finalColor += vec3(rippleDistort * 0.8);
 
         float alpha = smoothstep(0.0, 0.15, vUv.y) * 0.95;
@@ -391,6 +404,8 @@ export const CinematicUniverse3D: React.FC<CinematicUniverse3DProps> = ({
     textCanvas.height = 240;
     const tCtx = textCanvas.getContext('2d')!;
 
+    const nameCenterY = 9.2;
+    const nameDepth = -14;
     const letterChars = ['S', 'A', 'B', 'D', 'H', 'A'];
     const letterCenters = [200, 360, 520, 680, 840, 1000];
 
@@ -430,8 +445,8 @@ export const CinematicUniverse3D: React.FC<CinematicUniverse3DProps> = ({
             const canvasY = 30 + py;
 
             const worldX = (canvasX - 600) * 0.033;
-            const worldY = 9.2 - (canvasY - 120) * 0.033;
-            const worldZ = -14.0 + (Math.random() - 0.5) * 0.3;
+            const worldY = nameCenterY - (canvasY - 120) * 0.033;
+            const worldZ = nameDepth + (Math.random() - 0.5) * 0.3;
 
             const ox = (Math.random() - 0.5) * 80;
             const oy = 6 + Math.random() * 26;
@@ -471,8 +486,8 @@ export const CinematicUniverse3D: React.FC<CinematicUniverse3DProps> = ({
             const canvasY = 30 + py + (Math.random() - 0.5) * 1.5;
 
             const worldX = (canvasX - 600) * 0.033;
-            const worldY = 9.2 - (canvasY - 120) * 0.033;
-            const worldZ = -14.0 + (Math.random() - 0.5) * 0.3;
+            const worldY = nameCenterY - (canvasY - 120) * 0.033;
+            const worldZ = nameDepth + (Math.random() - 0.5) * 0.3;
 
             const ox = (Math.random() - 0.5) * 80;
             const oy = 6 + Math.random() * 26;
@@ -523,16 +538,33 @@ export const CinematicUniverse3D: React.FC<CinematicUniverse3DProps> = ({
     const constellationPoints = new THREE.Points(cGeo, cMat);
     scene.add(constellationPoints);
 
+    const fitConstellation = () => {
+      const bounds = container.getBoundingClientRect();
+      const slot = nameSlot.getBoundingClientRect();
+      const center = new THREE.Vector3(0, nameCenterY, nameDepth).project(camera);
+      const outer = new THREE.Vector3(15, nameCenterY + 2, nameDepth).project(camera);
+      const nameWidth = outer.x * bounds.width;
+      const nameHeight = (outer.y - center.y) * bounds.height;
+      const scale = Math.min(1, (slot.width * 0.94) / nameWidth, (slot.height * 0.85) / nameHeight);
+
+      // Place the star name in the text layout's reserved space at its original depth.
+      center.x = ((slot.left + slot.width / 2 - bounds.left) / bounds.width) * 2 - 1;
+      center.y = 1 - ((slot.top + slot.height / 2 - bounds.top) / bounds.height) * 2;
+      center.unproject(camera);
+      constellationPoints.scale.set(scale, scale, 1);
+      constellationPoints.position.set(center.x, center.y - nameCenterY * scale, center.z - nameDepth);
+      cMat.size = 0.85 * scale;
+    };
+    fitConstellation();
+
     // 9. Interactive Raycasting (Lake, Moon, Sky)
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
 
-    const handlePointerDown = (event: MouseEvent | TouchEvent) => {
-      const clientX = 'touches' in event ? event.touches[0].clientX : event.clientX;
-      const clientY = 'touches' in event ? event.touches[0].clientY : event.clientY;
-
-      mouse.x = (clientX / window.innerWidth) * 2 - 1;
-      mouse.y = -(clientY / window.innerHeight) * 2 + 1;
+    const handlePointerDown = (event: MouseEvent) => {
+      const bounds = container.getBoundingClientRect();
+      mouse.x = ((event.clientX - bounds.left) / bounds.width) * 2 - 1;
+      mouse.y = -((event.clientY - bounds.top) / bounds.height) * 2 + 1;
 
       raycaster.setFromCamera(mouse, camera);
 
@@ -559,8 +591,7 @@ export const CinematicUniverse3D: React.FC<CinematicUniverse3DProps> = ({
       }
     };
 
-    window.addEventListener('mousedown', handlePointerDown);
-    window.addEventListener('touchstart', handlePointerDown, { passive: true });
+    container.addEventListener('click', handlePointerDown);
 
     // 10. Resize handling
     const handleResize = () => {
@@ -569,13 +600,20 @@ export const CinematicUniverse3D: React.FC<CinematicUniverse3DProps> = ({
       height = container.clientHeight || window.innerHeight;
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
+      fitConstellation();
       renderer.setSize(width, height);
+      if (reducedMotion) renderer.render(scene, camera);
     };
-    window.addEventListener('resize', handleResize);
+    const layoutObserver = new ResizeObserver(handleResize);
+    layoutObserver.observe(container);
+    layoutObserver.observe(nameSlot);
+    if (nameSlot.parentElement) layoutObserver.observe(nameSlot.parentElement);
 
     // 11. Animation Loop with Smooth Constellation Morphing
-    let clock = new THREE.Clock();
-    let animId: number;
+    const startTime = performance.now();
+    let lastTime = startTime;
+    let elapsedTime = 0;
+    let animId = 0;
     let frameCount = 0;
     let isPositionsSettled = false;
 
@@ -585,11 +623,13 @@ export const CinematicUniverse3D: React.FC<CinematicUniverse3DProps> = ({
       return x * x * (3 - 2 * x);
     };
 
-    const animate = () => {
-      animId = requestAnimationFrame(animate);
+    const animate = (now: number) => {
+      if (!reducedMotion) animId = requestAnimationFrame(animate);
       frameCount++;
-      const delta = clock.getDelta();
-      const elapsed = clock.getElapsedTime();
+      const delta = reducedMotion ? 0 : Math.min((now - lastTime) / 1000, 0.05);
+      lastTime = now;
+      elapsedTime += delta;
+      const elapsed = reducedMotion ? 6 : elapsedTime;
 
       // Update Water Shader
       waterUniforms.uTime.value = elapsed;
@@ -683,12 +723,11 @@ export const CinematicUniverse3D: React.FC<CinematicUniverse3DProps> = ({
       renderer.render(scene, camera);
     };
 
-    animate();
+    animate(startTime);
 
     return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('mousedown', handlePointerDown);
-      window.removeEventListener('touchstart', handlePointerDown);
+      layoutObserver.disconnect();
+      container.removeEventListener('click', handlePointerDown);
       cancelAnimationFrame(animId);
 
       renderer.dispose();
@@ -707,17 +746,22 @@ export const CinematicUniverse3D: React.FC<CinematicUniverse3DProps> = ({
       ffTex.dispose();
       cGeo.dispose();
       cMat.dispose();
+      for (const mountain of [mtnFar, mtnMid, mtnNear]) {
+        mountain.geometry.dispose();
+        mountain.material.dispose();
+      }
 
       if (container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
       }
     };
-  }, [onOpenWishes, onPlayWaterDrop, onPlayStarCollect]);
+  }, [constellationSlot, onOpenWishes, onPlayWaterDrop, onPlayStarCollect, reducedMotion]);
 
   return (
     <div
       ref={mountRef}
-      className="absolute inset-0 w-full h-full cursor-pointer z-0 overflow-hidden select-none"
+      className={`absolute inset-0 w-full h-full z-0 overflow-hidden select-none ${hasFallback ? 'finale-sky-fallback' : 'cursor-pointer'}`}
+      aria-hidden="true"
     />
   );
 };

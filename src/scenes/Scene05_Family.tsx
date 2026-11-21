@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { StoryDialog } from '../components/common/StoryDialog';
 import { chapterTitles } from '../data/birthdayContent';
 import { birthdayPhotos, BirthdayPhoto } from '../data/photos';
 import { familyInteractive } from '../data/interactiveContent';
@@ -59,13 +60,13 @@ export const Scene05_Family: React.FC<Scene05Props> = ({
   };
 
   return (
-    <div className="relative min-h-screen w-full px-4 sm:px-6 lg:px-8 py-20 bg-gradient-to-b from-[#FFF9F3] via-[#FFFDF5] to-[#FDF5F2] text-[#4A3E4D] overflow-hidden">
+    <div className="album-page">
       {/* Warm Golden Glows */}
       <div className="absolute top-20 right-10 w-[450px] h-[450px] bg-amber-100/50 rounded-full blur-[110px] pointer-events-none" />
       <div className="absolute bottom-20 left-10 w-[400px] h-[400px] bg-orange-100/40 rounded-full blur-[100px] pointer-events-none" />
 
       {/* Header */}
-      <div className="relative z-10 max-w-3xl mx-auto text-center mb-12">
+      <div className="album-heading">
         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold tracking-widest uppercase mb-4 shadow-xs">
           <Home className="w-3.5 h-3.5" />
           <span>{chapter.tag}</span>
@@ -127,52 +128,39 @@ export const Scene05_Family: React.FC<Scene05Props> = ({
 
       {/* 1. LIVING PHOTO FRAMES GALLERY */}
       <div className="relative z-10 max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+        <div className="family-photo-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {photos.map((photo: BirthdayPhoto) => {
             const isLandscape = photo.orientation === 'landscape';
-            const isSquare = photo.orientation === 'square';
 
             return (
-              <div
+              <button
+                type="button"
                 key={photo.id}
                 onClick={() => onSelectPhoto(photo)}
-                className={`group cursor-pointer bg-white/95 rounded-2xl p-4 shadow-md hover:shadow-2xl border border-amber-200/80 transition-all duration-300 hover:-translate-y-2 select-none hover:ring-2 hover:ring-amber-300 ${
+                className={`group flex min-w-0 flex-col items-center cursor-pointer bg-white/95 rounded-2xl p-4 shadow-md hover:shadow-2xl border border-amber-200/80 transition-all duration-300 hover:-translate-y-2 select-none hover:ring-2 hover:ring-amber-300 ${
                   isLandscape ? 'sm:col-span-2 lg:col-span-2' : ''
                 }`}
               >
                 {/* Gold accent border container */}
-                <div
-                  className={`relative w-full rounded-xl overflow-hidden bg-amber-50/70 p-1 border border-amber-200/60 ${
-                    isLandscape
-                      ? 'aspect-[16/10]'
-                      : isSquare
-                      ? 'aspect-square'
-                      : 'aspect-[3/4]'
-                  }`}
-                >
+                <span className="photo-mat family-photo w-full rounded-lg border border-amber-200/60">
                   <img
                     src={photo.src}
                     alt={photo.alt}
-                    className="w-full h-full object-cover object-center rounded-lg group-hover:scale-105 transition-transform duration-500"
+                    className="photo-fit w-full h-full"
                     loading="lazy"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent opacity-60" />
-                  {photo.tag && (
-                    <span className="absolute top-3 left-3 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white/95 text-amber-900 shadow-sm backdrop-blur-xs">
-                      {photo.tag}
-                    </span>
-                  )}
-                </div>
+                </span>
 
-                <div className="mt-4 text-center px-2">
-                  <p className="font-serif text-lg font-semibold text-slate-800 leading-snug">
+                <span className="mt-4 text-center px-2">
+                  {photo.tag && <span className="block text-xs font-semibold text-amber-800 mb-1">{photo.tag}</span>}
+                  <span className="block font-serif text-lg font-semibold text-slate-800 leading-snug">
                     "{photo.caption}"
-                  </p>
+                  </span>
                   <span className="inline-block mt-1 text-[11px] font-mono font-medium text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full">
                     Living Memory Frame • Tap to view full
                   </span>
-                </div>
-              </div>
+                </span>
+              </button>
             );
           })}
         </div>
@@ -193,9 +181,10 @@ export const Scene05_Family: React.FC<Scene05Props> = ({
 
       {/* Note Revelation Modal */}
       {activeNote && (
-        <div
+        <StoryDialog
+          label="Family memory"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn"
-          onClick={() => setActiveNote(null)}
+          onDismiss={() => setActiveNote(null)}
         >
           <div
             className="relative w-full max-w-md bg-gradient-to-b from-amber-50 to-white rounded-3xl p-6 sm:p-8 shadow-2xl border-2 border-amber-300 text-center flex flex-col items-center"
@@ -227,14 +216,15 @@ export const Scene05_Family: React.FC<Scene05Props> = ({
               Keep Close to Heart
             </button>
           </div>
-        </div>
+        </StoryDialog>
       )}
 
       {/* 3. FAMILY MEMORY PUZZLE MODAL */}
       {isPuzzleOpen && (
-        <div
+        <StoryDialog
+          label="Family photo puzzle"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-md animate-fadeIn"
-          onClick={() => setIsPuzzleOpen(false)}
+          onDismiss={() => setIsPuzzleOpen(false)}
         >
           <div
             className="relative w-full max-w-lg bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-amber-300 flex flex-col items-center text-center max-h-[92vh] overflow-y-auto"
@@ -260,31 +250,32 @@ export const Scene05_Family: React.FC<Scene05Props> = ({
             </p>
 
             {/* 3x3 Puzzle Grid */}
-            <div className="relative w-72 sm:w-80 aspect-square grid grid-cols-3 gap-1 bg-amber-100 p-1.5 rounded-2xl shadow-inner border border-amber-200">
+            <div className="relative w-full max-w-80 grid grid-cols-3 grid-rows-3 gap-1 bg-amber-100 p-1.5 rounded-2xl shadow-inner border border-amber-200" style={{ aspectRatio: `${puzzlePhoto.width} / ${puzzlePhoto.height}` }}>
               {puzzleTiles.map((tileIndex, slotIdx) => {
                 const isSelected = selectedTileIdx === slotIdx;
                 const row = Math.floor(tileIndex / 3);
                 const col = tileIndex % 3;
 
                 return (
-                  <div
+                  <button
+                    type="button"
                     key={slotIdx}
                     onClick={() => handleTileClick(slotIdx)}
-                    className={`relative cursor-pointer overflow-hidden rounded-lg aspect-square select-none transition-all ${
+                    aria-label={`Family puzzle tile ${slotIdx + 1}`}
+                    aria-pressed={isSelected}
+                    className={`relative cursor-pointer overflow-hidden rounded-lg select-none transition-all ${
                       isSelected ? 'ring-4 ring-amber-500 scale-95 shadow-lg' : 'hover:opacity-90'
                     }`}
+                    style={{
+                      backgroundImage: `url(${puzzlePhoto.src})`,
+                      backgroundSize: '300% 300%',
+                      backgroundPosition: `${col * 50}% ${row * 50}%`,
+                    }}
                   >
-                    <div
-                      className="w-[300%] h-[300%] bg-cover bg-no-repeat"
-                      style={{
-                        backgroundImage: `url(${puzzlePhoto.src})`,
-                        backgroundPosition: `${col * 50}% ${row * 50}%`,
-                      }}
-                    />
                     <span className="absolute bottom-1 right-1 text-[9px] font-mono font-bold bg-black/50 text-white px-1 rounded">
                       {slotIdx + 1}
                     </span>
-                  </div>
+                  </button>
                 );
               })}
             </div>
@@ -298,7 +289,7 @@ export const Scene05_Family: React.FC<Scene05Props> = ({
                 <img
                   src={puzzlePhoto.src}
                   alt="Puzzle reference"
-                  className="w-36 h-28 object-cover rounded-lg mx-auto shadow-md"
+                  className="photo-mat photo-fit w-full max-w-52 h-32 rounded-lg mx-auto"
                 />
               </div>
             )}
@@ -329,7 +320,7 @@ export const Scene05_Family: React.FC<Scene05Props> = ({
               )}
             </div>
           </div>
-        </div>
+        </StoryDialog>
       )}
     </div>
   );

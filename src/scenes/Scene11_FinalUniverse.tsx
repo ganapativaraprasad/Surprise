@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
+import { birthdayPhotos, BirthdayPhoto } from '../data/photos';
 import { CinematicUniverse3D } from '../components/finale/CinematicUniverse3D';
 import { FinaleCinematicOverlay } from '../components/finale/FinaleCinematicOverlay';
 import { TwentyTwoWishesModal } from '../components/finale/TwentyTwoWishesModal';
@@ -8,21 +9,26 @@ interface Scene11Props {
   onPlayWaterDropSfx: () => void;
   onPlayStarCollectSfx: () => void;
   onReplayJourney: () => void;
-  onSelectPhoto?: (photo: any) => void;
+  onSelectPhoto: (photo: BirthdayPhoto) => void;
 }
 
-export const Scene11_FinalUniverse: React.FC<Scene11Props> = ({
+export default function Scene11_FinalUniverse({
   onPlayWaterDropSfx,
   onPlayStarCollectSfx,
   onReplayJourney,
-}) => {
+  onSelectPhoto,
+}: Scene11Props) {
   const [isWishesOpen, setIsWishesOpen] = useState(false);
+  const openWishes = useCallback(() => setIsWishesOpen(true), []);
+  const portrait = birthdayPhotos.finale;
+  const constellationSlot = useRef<HTMLDivElement>(null);
 
   return (
-    <div className="relative min-h-[100svh] w-full overflow-hidden bg-[#10182F] text-white select-none">
+    <div className="finale-page">
       {/* 1. Real 3D WebGL Three.js Scene: Moon, Reflecting Lake, Fireflies, and Constellation Morphing */}
       <CinematicUniverse3D
-        onOpenWishes={() => setIsWishesOpen(true)}
+        constellationSlot={constellationSlot}
+        onOpenWishes={openWishes}
         onPlayWaterDrop={onPlayWaterDropSfx}
         onPlayStarCollect={onPlayStarCollectSfx}
       />
@@ -32,8 +38,11 @@ export const Scene11_FinalUniverse: React.FC<Scene11Props> = ({
 
       {/* 3. Controls & Birthday Typography Overlay */}
       <FinaleCinematicOverlay
-        onOpenWishes={() => setIsWishesOpen(true)}
+        constellationSlot={constellationSlot}
+        onOpenWishes={openWishes}
         onReplayJourney={onReplayJourney}
+        portrait={portrait}
+        onSelectPhoto={onSelectPhoto}
       />
 
       {/* 4. 22 Little Wishes Modal */}
@@ -44,4 +53,4 @@ export const Scene11_FinalUniverse: React.FC<Scene11Props> = ({
       />
     </div>
   );
-};
+}

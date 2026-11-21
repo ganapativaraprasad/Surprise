@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { StoryDialog } from '../components/common/StoryDialog';
 import { chapterTitles } from '../data/birthdayContent';
 import { birthdayPhotos, BirthdayPhoto } from '../data/photos';
 import { childhoodInteractive } from '../data/interactiveContent';
@@ -37,13 +38,13 @@ export const Scene03_Childhood: React.FC<Scene03Props> = ({
   const isAllStarsCollected = collectedStars.length === childhoodInteractive.hiddenStars.length;
 
   return (
-    <div className="relative min-h-screen w-full px-4 sm:px-6 lg:px-8 py-20 bg-gradient-to-b from-[#FFFDF9] via-[#FFF5F8] to-[#FBF4FC] text-[#4A3E4D] overflow-hidden">
+    <div className="album-page">
       {/* Background Soft Blurs */}
       <div className="absolute top-10 left-1/4 w-80 h-80 bg-pink-100/60 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-purple-100/50 rounded-full blur-3xl pointer-events-none" />
 
       {/* Header Section */}
-      <div className="relative z-10 max-w-3xl mx-auto text-center mb-10">
+      <div className="album-heading">
         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-pink-100 text-pink-700 text-xs font-bold tracking-widest uppercase mb-4 shadow-xs">
           <Sparkles className="w-3.5 h-3.5" />
           <span>{chapter.tag}</span>
@@ -115,13 +116,12 @@ export const Scene03_Childhood: React.FC<Scene03Props> = ({
         })}
 
         {/* Section 1: Top Featured Showcase (First 3 Photos) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10 items-center justify-items-center mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10 items-start justify-items-center mb-12">
           {photos.slice(0, 3).map((photo, index) => {
-            const tilt = index === 0 ? '-rotate-2' : index === 1 ? 'rotate-1 md:-translate-y-4' : 'rotate-2';
             const sweetMsg = childhoodInteractive.memoriesMessages[index % childhoodInteractive.memoriesMessages.length];
 
             return (
-              <div key={photo.id} className={`w-full flex flex-col items-center ${tilt}`}>
+              <div key={photo.id} className="w-full flex flex-col items-center">
                 <PolaroidPhoto
                   photo={photo}
                   onClick={() => setActiveMemory({ photo, message: sweetMsg })}
@@ -149,12 +149,11 @@ export const Scene03_Childhood: React.FC<Scene03Props> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 justify-items-center">
             {photos.slice(3, 7).map((photo, index) => {
-              const offsets = ['lg:translate-y-0', 'lg:translate-y-6', 'lg:-translate-y-2', 'lg:translate-y-4'];
               const actualIdx = 3 + index;
               const sweetMsg = childhoodInteractive.memoriesMessages[actualIdx % childhoodInteractive.memoriesMessages.length];
 
               return (
-                <div key={photo.id} className={`w-full flex flex-col items-center ${offsets[index % 4]}`}>
+                <div key={photo.id} className="w-full flex flex-col items-center">
                   <PolaroidPhoto
                     photo={photo}
                     onClick={() => setActiveMemory({ photo, message: sweetMsg })}
@@ -176,12 +175,11 @@ export const Scene03_Childhood: React.FC<Scene03Props> = ({
         {/* Section 3: Nostalgic Mosaic Keepsakes (Final 4 Photos) */}
         <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 justify-items-center">
           {photos.slice(7).map((photo, index) => {
-            const tilt = index % 2 === 0 ? '-rotate-1' : 'rotate-1.5';
             const actualIdx = 7 + index;
             const sweetMsg = childhoodInteractive.memoriesMessages[actualIdx % childhoodInteractive.memoriesMessages.length];
 
             return (
-              <div key={photo.id} className={`w-full flex flex-col items-center ${tilt}`}>
+              <div key={photo.id} className="w-full flex flex-col items-center">
                 <PolaroidPhoto
                   photo={photo}
                   onClick={() => setActiveMemory({ photo, message: sweetMsg })}
@@ -215,9 +213,10 @@ export const Scene03_Childhood: React.FC<Scene03Props> = ({
 
       {/* Interaction 1: Memory Revelation Popup */}
       {activeMemory && (
-        <div
+        <StoryDialog
+          label="Discovered memory"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn"
-          onClick={() => setActiveMemory(null)}
+          onDismiss={() => setActiveMemory(null)}
         >
           <div
             className="relative w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-pink-200 text-center flex flex-col items-center"
@@ -242,11 +241,11 @@ export const Scene03_Childhood: React.FC<Scene03Props> = ({
               "{activeMemory.message}"
             </p>
 
-            <div className="w-32 aspect-[3/4] rounded-lg overflow-hidden my-3 shadow-md border-2 border-pink-200">
+            <div className="photo-mat w-52 max-w-full h-40 rounded-lg my-3 border border-pink-200">
               <img
                 src={activeMemory.photo.src}
                 alt={activeMemory.photo.alt}
-                className="w-full h-full object-cover"
+                className="w-full h-full photo-fit"
               />
             </div>
 
@@ -270,14 +269,15 @@ export const Scene03_Childhood: React.FC<Scene03Props> = ({
               </button>
             </div>
           </div>
-        </div>
+        </StoryDialog>
       )}
 
       {/* Interaction 2: Star Message Modal */}
       {revealedStarMessage && (
-        <div
+        <StoryDialog
+          label="Hidden star"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn"
-          onClick={() => setRevealedStarMessage(null)}
+          onDismiss={() => setRevealedStarMessage(null)}
         >
           <div
             className="relative w-full max-w-sm bg-gradient-to-b from-amber-50 to-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-amber-300 text-center flex flex-col items-center"
@@ -307,7 +307,7 @@ export const Scene03_Childhood: React.FC<Scene03Props> = ({
               Continue Exploring
             </button>
           </div>
-        </div>
+        </StoryDialog>
       )}
     </div>
   );

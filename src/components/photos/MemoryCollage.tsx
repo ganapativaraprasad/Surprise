@@ -90,7 +90,7 @@ export const MemoryCollage: React.FC<MemoryCollageProps> = ({ photos, onSelectPh
                         e.currentTarget.src = photo.placeholderSrc;
                       }
                     }}
-                    className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                    className="w-full h-full photo-fit"
                     loading="lazy"
                   />
                   <div className="absolute top-2 right-2 p-1.5 rounded-full bg-white/85 text-rose-500 shadow-sm backdrop-blur-xs">
@@ -144,7 +144,7 @@ const FilmFrameItem: React.FC<{ photo: BirthdayPhoto; index: number; onClick: ()
               setImgSrc(photo.placeholderSrc);
             }
           }}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          className="w-full h-full photo-fit"
           loading="lazy"
         />
         <div className="absolute inset-0 bg-amber-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />

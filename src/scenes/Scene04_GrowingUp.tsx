@@ -4,7 +4,7 @@ import { birthdayPhotos, BirthdayPhoto } from '../data/photos';
 import { growingUpInteractive } from '../data/interactiveContent';
 import { CoverflowCarousel } from '../components/growingUp/CoverflowCarousel';
 import { TimelinePhoto } from '../components/photos/TimelinePhoto';
-import { Clock, Lock, Unlock, ArrowRight, LayoutGrid, Sparkles, Layers } from 'lucide-react';
+import { Clock, Lock, Unlock, ArrowRight, LayoutGrid, Sparkles, Layers, ChevronsLeftRight } from 'lucide-react';
 
 interface Scene04Props {
   onSelectPhoto: (photo: BirthdayPhoto) => void;
@@ -37,9 +37,9 @@ export const Scene04_GrowingUp: React.FC<Scene04Props> = ({
     caption: 'Little footsteps filled with innocence, curiosity, and wonder.',
     tag: 'Little Steps',
     alt: 'Sabdha Childhood in maroon dress',
-    width: 1200,
-    height: 1600,
-    aspectRatio: 0.75,
+    width: 899,
+    height: 1599,
+    aspectRatio: 0.56,
     orientation: 'portrait',
   };
 
@@ -56,13 +56,13 @@ export const Scene04_GrowingUp: React.FC<Scene04Props> = ({
   };
 
   return (
-    <div className="relative min-h-screen w-full px-4 sm:px-6 lg:px-8 pt-16 pb-36 bg-gradient-to-b from-[#FBF4FC] via-[#F4F9FF] to-[#FFF9F3] text-[#4A3E4D] overflow-hidden">
+    <div className="album-page">
       {/* Soft Background Auras */}
       <div className="absolute top-1/3 -left-32 w-96 h-96 bg-blue-100/50 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute top-2/3 -right-32 w-96 h-96 bg-pink-100/40 rounded-full blur-3xl pointer-events-none" />
 
       {/* Chapter Header */}
-      <div className="relative z-10 max-w-3xl mx-auto text-center mb-8">
+      <div className="album-heading">
         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold tracking-widest uppercase mb-4 shadow-xs">
           <Clock className="w-3.5 h-3.5 text-blue-600" />
           <span>{chapter.tag}</span>
@@ -81,6 +81,7 @@ export const Scene04_GrowingUp: React.FC<Scene04Props> = ({
           <div className="inline-flex p-1 bg-white/90 border border-slate-200 rounded-full shadow-xs">
             <button
               onClick={() => setViewMode('coverflow')}
+              aria-pressed={viewMode === 'coverflow'}
               className={`px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all ${
                 viewMode === 'coverflow'
                   ? 'bg-blue-600 text-white shadow-xs'
@@ -88,10 +89,11 @@ export const Scene04_GrowingUp: React.FC<Scene04Props> = ({
               }`}
             >
               <Layers className="w-3.5 h-3.5" />
-              <span>3D Coverflow View</span>
+              <span>Photo album</span>
             </button>
             <button
               onClick={() => setViewMode('grid')}
+              aria-pressed={viewMode === 'grid'}
               className={`px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all ${
                 viewMode === 'grid'
                   ? 'bg-blue-600 text-white shadow-xs'
@@ -99,7 +101,7 @@ export const Scene04_GrowingUp: React.FC<Scene04Props> = ({
               }`}
             >
               <LayoutGrid className="w-3.5 h-3.5" />
-              <span>Timeline Grid View</span>
+              <span>Timeline grid</span>
             </button>
           </div>
         </div>
@@ -108,7 +110,7 @@ export const Scene04_GrowingUp: React.FC<Scene04Props> = ({
       <div className="relative z-10 max-w-7xl mx-auto space-y-16">
         {/* SECTION 1: 3D COVERFLOW OR TIMELINE GRID */}
         {viewMode === 'coverflow' ? (
-          <section aria-label="3D Coverflow Timeline">
+          <section aria-label="Growing Up album">
             <CoverflowCarousel
               photos={photos}
               milestoneMessages={growingUpInteractive.milestoneMessages}
@@ -157,63 +159,33 @@ export const Scene04_GrowingUp: React.FC<Scene04Props> = ({
             </h3>
 
             <p className="text-xs sm:text-sm text-slate-500 font-sans italic mt-1.5 mb-8">
-              Drag the interactive slider below to witness time gracefully unfold:
+              Drag the divider left or right to reveal the full photo. Tap Then or Now to enlarge it.
             </p>
 
-            {/* Draggable Comparison Window (Moderate, 9:16 aspect ratio, max-w-xs) */}
-            <div className="relative max-w-[280px] sm:max-w-[300px] mx-auto aspect-[9/16] rounded-2xl overflow-hidden shadow-2xl border-4 border-white select-none bg-slate-100">
-              {/* NOW Photo (Background / Age 22) */}
+            <div className="photo-comparison photo-mat">
+              <img className="photo-fit" src={nowPhoto.src} alt={nowPhoto.alt} />
               <img
-                src={nowPhoto.src}
-                alt="Sabdha Now at 22"
-                className="absolute inset-0 w-full h-full object-cover object-top"
+                className="photo-fit"
+                src={thenPhoto.src}
+                alt={thenPhoto.alt}
+                style={{ clipPath: `inset(0 ${100 - sliderPos}% 0 0)` }}
               />
-              <span className="absolute bottom-4 right-4 z-10 px-3 py-1 rounded-full bg-slate-900/85 text-white text-[11px] font-mono font-bold shadow-lg backdrop-blur-xs border border-white/20">
-                NOW (Age 22) ✨
-              </span>
-
-              {/* THEN Photo (Foreground clipped by slider / Childhood baby frock) */}
-              <div
-                className="absolute inset-y-0 left-0 overflow-hidden z-10"
-                style={{ width: `${sliderPos}%` }}
-              >
-                <img
-                  src={thenPhoto.src}
-                  alt="Sabdha Childhood Then"
-                  className="absolute inset-0 w-full h-full object-cover object-top max-w-none"
-                  style={{ width: '100%', height: '100%' }}
-                />
-                <span className="absolute bottom-4 left-4 px-3 py-1 rounded-full bg-pink-600/90 text-white text-[11px] font-mono font-bold shadow-lg backdrop-blur-xs border border-white/20 whitespace-nowrap">
-                  🌸 THEN (Childhood)
-                </span>
+              <div className="photo-comparison-divider" style={{ '--comparison-position': `${sliderPos}%` } as React.CSSProperties} aria-hidden="true">
+                <span><ChevronsLeftRight size={22} /></span>
               </div>
-
-              {/* Center Divider Handle */}
-              <div
-                className="absolute inset-y-0 w-1 bg-white shadow-[0_0_12px_rgba(0,0,0,0.6)] cursor-ew-resize flex items-center justify-center z-20 pointer-events-none"
-                style={{ left: `${sliderPos}%` }}
-              >
-                <div className="w-8 h-8 rounded-full bg-white shadow-xl text-slate-800 flex items-center justify-center text-xs font-bold ring-2 ring-blue-300">
-                  ↔
-                </div>
-              </div>
-            </div>
-
-            {/* Range slider for tactile control */}
-            <div className="max-w-xs mx-auto mt-6 px-2">
               <input
                 type="range"
                 min="0"
                 max="100"
                 value={sliderPos}
-                onChange={(e) => setSliderPos(Number(e.target.value))}
-                className="w-full accent-blue-600 cursor-pointer h-2 bg-slate-200 rounded-lg"
+                onChange={(event) => setSliderPos(event.currentTarget.valueAsNumber)}
                 aria-label="Then and Now comparison slider"
+                aria-valuetext={`${sliderPos}% childhood, ${100 - sliderPos}% age 22`}
               />
-              <div className="flex justify-between text-[11px] font-mono text-slate-400 mt-2">
-                <span>← Slide to Then</span>
-                <span>Slide to Now →</span>
-              </div>
+            </div>
+            <div className="photo-comparison-labels">
+              <button type="button" onClick={() => onSelectPhoto(thenPhoto)}>🌸 Then (Childhood)</button>
+              <button type="button" onClick={() => onSelectPhoto(nowPhoto)}>Now (Age 22) ✨</button>
             </div>
 
             <div className="mt-5 p-4 rounded-2xl bg-blue-50/60 border border-blue-100 max-w-md mx-auto">

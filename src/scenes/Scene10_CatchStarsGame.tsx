@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { StoryDialog } from '../components/common/StoryDialog';
 import { chapterTitles, fiveStarWishes, StarWish } from '../data/birthdayContent';
 import { Star, Sparkles, CheckCircle2, RotateCcw, X, ArrowRight } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -24,11 +25,11 @@ export const Scene10_CatchStarsGame: React.FC<Scene10Props> = ({
 
   // Pre-calculated aesthetic scattered positions for the 5 stars across the sky
   const starPositions = [
-    { top: '22%', left: '18%' },
-    { top: '38%', left: '76%' },
-    { top: '56%', left: '26%' },
-    { top: '68%', left: '68%' },
-    { top: '30%', left: '48%' },
+    { top: '21%', left: '19%' },
+    { top: '20%', left: '79%' },
+    { top: '69%', left: '22%' },
+    { top: '73%', left: '75%' },
+    { top: '43%', left: '49%' },
   ];
 
   const handleCollectStar = (star: StarWish) => {
@@ -46,6 +47,7 @@ export const Scene10_CatchStarsGame: React.FC<Scene10Props> = ({
     // If all 5 collected, trigger celebratory star confetti
     if (nextCollected.length === 5) {
       confetti({
+        disableForReducedMotion: true,
         particleCount: 80,
         spread: 70,
         origin: { y: 0.6 },
@@ -62,7 +64,7 @@ export const Scene10_CatchStarsGame: React.FC<Scene10Props> = ({
   const isCompleted = collectedIds.length === 5;
 
   return (
-    <div className="relative min-h-screen w-full flex flex-col justify-between px-4 sm:px-6 py-12 bg-gradient-to-b from-[#1C1335] via-[#2A1845] to-[#140D26] text-white overflow-hidden select-none">
+    <div className="game-page">
       {/* Background Floating Dream Clouds & Nebula */}
       <div className="absolute top-10 left-1/4 w-96 h-96 bg-purple-600/15 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-pink-600/15 rounded-full blur-[100px] pointer-events-none" />
@@ -85,7 +87,7 @@ export const Scene10_CatchStarsGame: React.FC<Scene10Props> = ({
       </div>
 
       {/* Game Header & Instructions */}
-      <div className="relative z-10 max-w-2xl mx-auto text-center pt-4">
+      <div className="game-heading">
         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-400/10 border border-amber-300/20 text-amber-300 text-xs font-bold tracking-widest uppercase mb-3">
           <Star className="w-3.5 h-3.5 fill-current" />
           <span>{chapter.tag} • MINI-GAME</span>
@@ -133,35 +135,30 @@ export const Scene10_CatchStarsGame: React.FC<Scene10Props> = ({
       </div>
 
       {/* Interactive Sky Playfield */}
-      <div className="relative z-20 w-full max-w-4xl h-[420px] sm:h-[480px] mx-auto my-6 rounded-3xl border border-white/10 bg-slate-950/30 backdrop-blur-xs relative overflow-hidden shadow-2xl">
+      <div className="star-board">
         {/* Subtle grid pattern */}
         <div className="absolute inset-0 bg-[radial-gradient(#ffffff0a_1px,transparent_1px)] [background-size:20px_20px] pointer-events-none" />
 
         {/* 5 Collectible Stars */}
-        {starsData.map((star: StarWish, idx: number) => {
+        {!isCompleted && starsData.map((star: StarWish, idx: number) => {
           const isCollected = collectedIds.includes(star.id);
           const pos = starPositions[idx];
 
           return (
-            <div
+            <button
+              type="button"
               key={star.id}
               onClick={() => handleCollectStar(star)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  handleCollectStar(star);
-                }
-              }}
+              aria-label={isCollected ? `Read ${star.name} wish again` : `Catch ${star.name} star`}
               style={{
                 top: pos.top,
                 left: pos.left,
               }}
-              className="absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer group p-3 select-none"
+              className="sky-star absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer group select-none"
+              data-collected={isCollected}
             >
               {/* Star Pulsing Halo */}
-              <div
+              <span
                 className={`absolute inset-0 rounded-full transition-all duration-500 ${
                   isCollected
                     ? 'bg-green-400/20 scale-125'
@@ -170,7 +167,7 @@ export const Scene10_CatchStarsGame: React.FC<Scene10Props> = ({
               />
 
               {/* Star Icon Body */}
-              <div
+              <span
                 className={`relative flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full transition-all duration-300 ${
                   isCollected
                     ? 'bg-slate-900/80 border-2 border-emerald-400 text-emerald-300 shadow-lg'
@@ -182,7 +179,7 @@ export const Scene10_CatchStarsGame: React.FC<Scene10Props> = ({
                 ) : (
                   <Star className="w-7 h-7 fill-current text-slate-900" />
                 )}
-              </div>
+              </span>
 
               {/* Star Name Tag */}
               <span
@@ -192,12 +189,12 @@ export const Scene10_CatchStarsGame: React.FC<Scene10Props> = ({
               >
                 {star.name}
               </span>
-            </div>
+            </button>
           );
         })}
 
         {/* Completion Grand Star Reveal */}
-        {isCompleted && (
+        {isCompleted && !activeWish && (
           <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-slate-950/85 backdrop-blur-md p-6 text-center animate-fadeIn">
             <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-amber-300 via-yellow-200 to-pink-300 flex items-center justify-center text-slate-900 shadow-2xl animate-bounce">
               <Sparkles className="w-10 h-10" />
@@ -222,10 +219,11 @@ export const Scene10_CatchStarsGame: React.FC<Scene10Props> = ({
       </div>
 
       {/* Wish Reveal Modal on collecting each star */}
-      {activeWish && !isCompleted && (
-        <div
+      {activeWish && (
+        <StoryDialog
+          label="Star wish"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fadeIn"
-          onClick={() => setActiveWish(null)}
+          onDismiss={() => setActiveWish(null)}
         >
           <div
             className="relative max-w-sm w-full bg-gradient-to-b from-slate-900 to-slate-800 rounded-3xl p-6 border border-amber-300/40 shadow-2xl text-center"
@@ -262,7 +260,7 @@ export const Scene10_CatchStarsGame: React.FC<Scene10Props> = ({
               Catch Next Star
             </button>
           </div>
-        </div>
+        </StoryDialog>
       )}
 
       {/* Footer Controls: Reset & Skip */}

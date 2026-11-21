@@ -24,9 +24,6 @@ export const HangingPhoto: React.FC<HangingPhotoProps> = ({
   const swingDelays = ['0s', '0.6s', '1.2s', '0.3s', '0.9s', '1.5s'];
   const delay = swingDelays[index % swingDelays.length];
 
-  const isLandscape = photo.orientation === 'landscape';
-  const isSquare = photo.orientation === 'square';
-
   return (
     <div
       onClick={onClick}
@@ -38,17 +35,17 @@ export const HangingPhoto: React.FC<HangingPhotoProps> = ({
           onClick?.();
         }
       }}
-      className="group relative flex flex-col items-center cursor-pointer select-none"
+      className="hanging-photo group relative flex flex-col items-center cursor-pointer select-none min-w-0 w-full"
       style={{
-        animation: `hangingSwing 4.5s ease-in-out infinite alternate`,
+        animation: `hangingSwing 5.8s ease-in-out infinite`,
         animationDelay: delay,
         transformOrigin: 'top center',
       }}
     >
       <style>{`
         @keyframes hangingSwing {
-          0% { transform: rotate(-2.5deg); }
-          100% { transform: rotate(2.5deg); }
+          0%, 100% { transform: rotate(-1.3deg); }
+          50% { transform: rotate(1.5deg); }
         }
       `}</style>
 
@@ -63,31 +60,18 @@ export const HangingPhoto: React.FC<HangingPhotoProps> = ({
 
       {/* Polaroid Card with adaptive width & aspect ratio */}
       <div
-        className={`-mt-2 p-3 pb-7 bg-white rounded-md shadow-lg border border-slate-100 group-hover:shadow-2xl group-hover:scale-105 transition-all duration-300 ${
-          isLandscape
-            ? 'w-64 sm:w-72'
-            : isSquare
-            ? 'w-56 sm:w-60'
-            : 'w-52 sm:w-56'
-        }`}
+        className="hanging-print -mt-2 w-full p-3 pb-5 bg-white rounded-md shadow-lg border border-slate-100 group-hover:shadow-2xl transition-shadow duration-300"
       >
         <div
-          className={`relative w-full rounded overflow-hidden bg-pink-50 ${
-            isLandscape
-              ? 'aspect-[4/3]'
-              : isSquare
-              ? 'aspect-square'
-              : 'aspect-[3/4]'
-          }`}
+          className="photo-mat relative w-full aspect-square rounded"
         >
           <img
             src={imgSrc}
             alt={photo.alt}
             onError={handleImageError}
-            className="w-full h-full object-cover object-top"
+            className="w-full h-full photo-fit"
             loading="lazy"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
         </div>
 
         <div className="mt-3 text-center px-1">

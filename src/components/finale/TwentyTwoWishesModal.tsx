@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { StoryDialog } from '../common/StoryDialog';
 import { twentyTwoWishes, LittleWish } from '../../data/wishes';
 import { X, Sparkles } from 'lucide-react';
 
@@ -27,9 +28,10 @@ export const TwentyTwoWishesModal: React.FC<TwentyTwoWishesModalProps> = ({
   };
 
   return (
-    <div
+    <StoryDialog
+      label="22 Little Wishes"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/85 backdrop-blur-md animate-fadeIn"
-      onClick={onClose}
+      onDismiss={onClose}
     >
       <div
         className="relative max-w-2xl w-full max-h-[90vh] overflow-y-auto bg-gradient-to-b from-[#131A38] via-[#0E1428] to-[#080B17] rounded-3xl p-6 sm:p-8 border border-amber-300/30 shadow-[0_0_80px_rgba(167,139,250,0.3)] text-white"
@@ -118,6 +120,6 @@ export const TwentyTwoWishesModal: React.FC<TwentyTwoWishesModalProps> = ({
           </div>
         )}
       </div>
-    </div>
+    </StoryDialog>
   );
 };

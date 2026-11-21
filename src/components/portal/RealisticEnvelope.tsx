@@ -17,7 +17,7 @@ export const RealisticEnvelope: React.FC<RealisticEnvelopeProps> = ({
   return (
     <div
       onClick={onClick}
-      className="relative select-none cursor-pointer group flex flex-col items-center perspective-1000"
+      className="portal-envelope relative select-none group flex flex-col items-center perspective-1000"
     >
       {/* 1. Ambient Glow Aura behind Envelope */}
       <div
@@ -38,7 +38,7 @@ export const RealisticEnvelope: React.FC<RealisticEnvelopeProps> = ({
 
       {/* 2. Main Envelope 3D Body Container */}
       <div
-        className={`relative w-72 sm:w-84 md:w-96 h-48 sm:h-56 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-amber-100/60 transition-transform duration-700 ease-out transform ${
+        className={`portal-envelope-body relative rounded-lg border border-amber-100/60 transition-transform duration-700 ease-out ${
           isOpen ? 'scale-105' : 'hover:-translate-y-1.5'
         }`}
         style={{
@@ -62,9 +62,9 @@ export const RealisticEnvelope: React.FC<RealisticEnvelopeProps> = ({
 
         {/* 3. The Animated Folded Flap (Top Triangular Flap) */}
         <div
-          className={`absolute top-0 left-0 right-0 h-28 sm:h-32 rounded-t-2xl z-20 origin-top transition-all duration-1000 ease-in-out ${
+          className={`envelope-flap absolute top-0 left-0 right-0 h-24 sm:h-28 rounded-t-lg z-20 origin-top ${
             isOpen
-              ? 'rotate-x-180 -translate-y-3 opacity-0 pointer-events-none'
+              ? 'rotate-x-180 pointer-events-none'
               : 'rotate-x-0'
           }`}
           style={{
@@ -95,7 +95,7 @@ export const RealisticEnvelope: React.FC<RealisticEnvelopeProps> = ({
 
         {/* 5. Realistic Sculpted Wax Seal */}
         <div
-          className={`absolute top-20 sm:top-24 left-1/2 -translate-x-1/2 z-30 flex items-center justify-center transition-all duration-700 ${
+          className={`envelope-wax absolute left-1/2 -translate-x-1/2 z-30 flex items-center justify-center transition-all duration-700 ${
             isOpen ? 'scale-150 opacity-0' : isUnlocked ? 'scale-110' : 'group-hover:scale-105'
           }`}
         >
@@ -127,7 +127,7 @@ export const RealisticEnvelope: React.FC<RealisticEnvelopeProps> = ({
         </div>
 
         {/* 6. Letter Preview / Elegant Typography inside the card */}
-        <div className="relative z-15 h-full w-full flex flex-col items-center justify-center pt-8 sm:pt-10 px-6 text-center">
+        <div className="relative z-10 h-full w-full flex flex-col items-center justify-end pb-4 px-6 text-center">
           <span className="font-script text-3xl sm:text-4xl md:text-5xl text-slate-800 tracking-wide drop-shadow-xs font-semibold">
             For Sabdha
           </span>

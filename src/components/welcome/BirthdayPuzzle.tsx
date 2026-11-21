@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { StoryDialog } from '../common/StoryDialog';
 import confetti from 'canvas-confetti';
 import { RotateCcw, Eye, Wand2, Hash } from 'lucide-react';
 
@@ -66,6 +67,7 @@ export const BirthdayPuzzle: React.FC<BirthdayPuzzleProps> = ({
       onSolvedChange(true);
       // Trigger festive confetti
       confetti({
+        disableForReducedMotion: true,
         particleCount: 150,
         spread: 80,
         origin: { y: 0.6 },
@@ -79,15 +81,10 @@ export const BirthdayPuzzle: React.FC<BirthdayPuzzleProps> = ({
   const swapSlots = (slotA: number, slotB: number) => {
     if (slotA === slotB) return;
 
-    setBoard((prev) => {
-      const next = [...prev];
-      const temp = next[slotA];
-      next[slotA] = next[slotB];
-      next[slotB] = temp;
-
-      checkWinCondition(next);
-      return next;
-    });
+    const next = [...board];
+    [next[slotA], next[slotB]] = [next[slotB], next[slotA]];
+    setBoard(next);
+    checkWinCondition(next);
 
     setMoves((m) => m + 1);
     setSelectedSlot(null);
@@ -129,6 +126,7 @@ export const BirthdayPuzzle: React.FC<BirthdayPuzzleProps> = ({
     setSelectedSlot(null);
     onSolvedChange(true);
     confetti({
+      disableForReducedMotion: true,
       particleCount: 180,
       spread: 90,
       origin: { y: 0.6 },
@@ -165,15 +163,15 @@ export const BirthdayPuzzle: React.FC<BirthdayPuzzleProps> = ({
         </div>
       </div>
 
-      {/* 5x5 Puzzle Board Container (Aspect 9:16, Moderate Size ~290px-310px wide) */}
+      {/* The grid follows the portrait's proportions. */}
       <div
-        className={`relative w-[280px] sm:w-[300px] aspect-[9/16] rounded-2xl overflow-hidden p-1 bg-white shadow-2xl border-4 transition-all duration-500 ${
+        className={`relative w-full max-w-[280px] rounded-xl overflow-hidden p-1 bg-white shadow-2xl border-4 transition-all duration-500 ${
           isSolved
             ? 'border-emerald-400 ring-4 ring-emerald-200 shadow-emerald-200/50'
             : 'border-pink-200/90 shadow-pink-100/60'
         }`}
       >
-        <div className="w-full h-full grid grid-cols-5 grid-rows-5 gap-[1.5px] bg-slate-200 rounded-xl overflow-hidden">
+        <div className="birthday-puzzle-photo w-full grid grid-cols-5 grid-rows-5 bg-slate-200 rounded-xl overflow-hidden">
           {board.map((pieceIdx, slotIdx) => {
             const isCorrect = pieceIdx === slotIdx;
             const isSelected = selectedSlot === slotIdx;
@@ -185,18 +183,23 @@ export const BirthdayPuzzle: React.FC<BirthdayPuzzleProps> = ({
             const posY = row * 25;
 
             return (
-              <div
+              <button
+                type="button"
                 key={slotIdx}
                 onClick={() => handleTileClick(slotIdx)}
+                aria-label={`Tile ${slotIdx + 1}, piece ${pieceIdx + 1}${isCorrect ? ', correctly placed' : ''}`}
+                aria-pressed={isSelected}
+                disabled={isSolved}
                 draggable={!isSolved}
                 onDragStart={() => handleDragStart(slotIdx)}
+                onDragEnd={() => setDraggedSlot(null)}
                 onDragOver={handleDragOver}
                 onDrop={() => handleDrop(slotIdx)}
                 className={`relative w-full h-full cursor-pointer transition-transform duration-150 ${
                   isSelected
                     ? 'ring-2 ring-pink-500 scale-105 z-20 shadow-md'
                     : 'hover:opacity-90'
-                } ${isCorrect && !isSolved ? 'border-b-2 border-r-2 border-emerald-400/40' : ''}`}
+                }`}
                 style={{
                   backgroundImage: `url(${imageSrc})`,
                   backgroundSize: '500% 500%',
@@ -214,7 +217,7 @@ export const BirthdayPuzzle: React.FC<BirthdayPuzzleProps> = ({
                 {isCorrect && !isSolved && (
                   <span className="absolute bottom-0.5 right-0.5 w-2 h-2 rounded-full bg-emerald-400 ring-1 ring-white shadow-xs pointer-events-none" />
                 )}
-              </div>
+              </button>
             );
           })}
         </div>
@@ -233,7 +236,7 @@ export const BirthdayPuzzle: React.FC<BirthdayPuzzleProps> = ({
       </div>
 
       {/* Control Buttons Bar */}
-      <div className="w-full mt-3.5 flex items-center justify-between gap-1.5 px-1">
+      <div className="puzzle-controls">
         {/* Toggle Numbers */}
         <button
           onClick={() => setShowNumbers((prev) => !prev)}
@@ -285,9 +288,10 @@ export const BirthdayPuzzle: React.FC<BirthdayPuzzleProps> = ({
 
       {/* Peek Modal */}
       {showPeekModal && (
-        <div
+        <StoryDialog
+          label="Original birthday picture"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn"
-          onClick={() => setShowPeekModal(false)}
+          onDismiss={() => setShowPeekModal(false)}
         >
           <div
             className="relative bg-white p-4 rounded-3xl shadow-2xl max-w-xs text-center border-2 border-pink-200"
@@ -296,11 +300,11 @@ export const BirthdayPuzzle: React.FC<BirthdayPuzzleProps> = ({
             <h4 className="font-serif text-base font-bold text-slate-800 mb-2">
               Original Birthday Picture
             </h4>
-            <div className="w-[220px] aspect-[9/16] mx-auto rounded-xl overflow-hidden shadow-inner border border-pink-100">
+            <div className="birthday-puzzle-photo w-full max-w-[220px] mx-auto rounded-xl overflow-hidden shadow-inner border border-pink-100">
               <img
                 src={imageSrc}
                 alt="Original Sabdha Birthday portrait"
-                className="w-full h-full object-cover object-top"
+                className="w-full h-full photo-fit"
               />
             </div>
             <button
@@ -310,7 +314,7 @@ export const BirthdayPuzzle: React.FC<BirthdayPuzzleProps> = ({
               Close
             </button>
           </div>
-        </div>
+        </StoryDialog>
       )}
     </div>
   );

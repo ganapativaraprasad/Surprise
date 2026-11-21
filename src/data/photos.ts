@@ -33,10 +33,10 @@ export const birthdayPhotos: BirthdayPhotoCollection = {
     "caption": "Every beautiful story has a beginning.",
     "tag": "Beginning",
     "alt": "Sabdha Beginning photograph",
-    "width": 1600,
-    "height": 1200,
-    "aspectRatio": 1.33,
-    "orientation": "landscape",
+    "width": 1200,
+    "height": 1600,
+    "aspectRatio": 0.75,
+    "orientation": "portrait",
     "rotation": -2.5
   },
   {
@@ -57,10 +57,10 @@ export const birthdayPhotos: BirthdayPhotoCollection = {
     "caption": "A little smile from a beautiful beginning.",
     "tag": "Early Smile",
     "alt": "Sabdha Early Smile photograph",
-    "width": 1600,
-    "height": 1200,
-    "aspectRatio": 1.33,
-    "orientation": "landscape",
+    "width": 1200,
+    "height": 1600,
+    "aspectRatio": 0.75,
+    "orientation": "portrait",
     "rotation": -1.2
   },
   {
@@ -69,10 +69,10 @@ export const birthdayPhotos: BirthdayPhotoCollection = {
     "caption": "The sweetest chapters start small.",
     "tag": "Sweet Chapters",
     "alt": "Sabdha Sweet Chapters photograph",
-    "width": 960,
-    "height": 1280,
-    "aspectRatio": 0.75,
-    "orientation": "portrait",
+    "width": 1280,
+    "height": 960,
+    "aspectRatio": 1.33,
+    "orientation": "landscape",
     "rotation": 2.4
   },
   {
@@ -194,7 +194,7 @@ export const birthdayPhotos: BirthdayPhotoCollection = {
     "alt": "Sabdha Quiet Strength photograph",
     "width": 174,
     "height": 347,
-    "aspectRatio": 0.5,
+    "aspectRatio": 0.50,
     "orientation": "portrait",
     "rotation": 1.5
   },
@@ -389,7 +389,7 @@ export const birthdayPhotos: BirthdayPhotoCollection = {
     "alt": "Sabdha Home photograph",
     "width": 1062,
     "height": 662,
-    "aspectRatio": 1.6,
+    "aspectRatio": 1.60,
     "orientation": "landscape",
     "rotation": -2.5
   },
@@ -558,10 +558,10 @@ export const birthdayPhotos: BirthdayPhotoCollection = {
     "caption": "The ones who make ordinary days feel special.",
     "tag": "Celebration",
     "alt": "Sabdha Celebration photograph",
-    "width": 720,
-    "height": 1280,
-    "aspectRatio": 0.56,
-    "orientation": "portrait",
+    "width": 1280,
+    "height": 720,
+    "aspectRatio": 1.78,
+    "orientation": "landscape",
     "rotation": -2.0
   },
   {
@@ -793,9 +793,9 @@ export const birthdayPhotos: BirthdayPhotoCollection = {
     src: "/photos/birthday-letter/photo-01.jpg",
     caption: "A keepsake memory written with love for your 22nd birthday.",
     alt: "Sabdha letter keepsake photo",
-    width: 1200,
-    height: 1600,
-    aspectRatio: 0.75,
+    width: 586,
+    height: 1040,
+    aspectRatio: 0.56,
     orientation: "portrait",
     tag: "Keepsake"
   },
@@ -805,9 +805,9 @@ export const birthdayPhotos: BirthdayPhotoCollection = {
     src: "/photos/finale/photo-01.jpg",
     caption: "Under the starlit sky, celebrating 22 years of beautiful you.",
     alt: "Sabdha 22nd birthday finale portrait",
-    width: 900,
+    width: 1200,
     height: 1600,
-    aspectRatio: 0.56,
+    aspectRatio: 0.75,
     orientation: "portrait",
     tag: "Sabdha at 22"
   }

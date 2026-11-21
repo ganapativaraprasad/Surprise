@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { StoryDialog } from '../components/common/StoryDialog';
 import { chapterTitles } from '../data/birthdayContent';
 import { birthdayPhotos, BirthdayPhoto } from '../data/photos';
 import { whatMakesYouYouInteractive } from '../data/interactiveContent';
@@ -46,13 +47,13 @@ export const Scene08_SpecialMoments: React.FC<Scene08Props> = ({
   };
 
   return (
-    <div className="relative min-h-screen w-full px-4 sm:px-6 lg:px-8 pt-16 pb-36 bg-gradient-to-b from-[#F9F4FC] via-[#FFFDF9] to-[#FBF5F9] text-[#4A3E4D] overflow-hidden">
+    <div className="album-page">
       {/* Decorative Background Glows */}
       <div className="absolute top-20 left-1/4 w-96 h-96 bg-purple-200/40 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute top-2/3 right-1/4 w-96 h-96 bg-pink-200/40 rounded-full blur-3xl pointer-events-none" />
 
       {/* Chapter Header */}
-      <div className="relative z-10 max-w-3xl mx-auto text-center mb-14">
+      <div className="album-heading">
         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-pink-100 text-pink-700 text-xs font-bold tracking-widest uppercase mb-4 shadow-xs">
           <Sparkles className="w-3.5 h-3.5 text-pink-500" />
           <span>{chapter.tag}</span>
@@ -215,7 +216,7 @@ export const Scene08_SpecialMoments: React.FC<Scene08Props> = ({
                   onClick={() => onSelectPhoto(photo)}
                   className="cursor-pointer group w-full max-w-sm bg-white p-4 rounded-3xl shadow-md hover:shadow-2xl border border-pink-100 hover:border-pink-300 hover:-translate-y-1.5 transition-all duration-300 flex flex-col select-none"
                 >
-                  {/* Photo Frame: object-contain inside ambient aura guarantees ZERO heads or faces are ever cropped */}
+                  {/* Photo mat with an ambient background */}
                   <div className="relative w-full aspect-[3/4] sm:aspect-[4/5] rounded-2xl overflow-hidden bg-gradient-to-b from-pink-50/60 to-purple-50/40 flex items-center justify-center p-2 shadow-inner">
                     {/* Ambient blurred backdrop echoing photo's true colors */}
                     <img
@@ -225,11 +226,11 @@ export const Scene08_SpecialMoments: React.FC<Scene08Props> = ({
                       className="absolute inset-0 w-full h-full object-cover filter blur-xl opacity-35 scale-110 pointer-events-none"
                     />
 
-                    {/* Main crystal-clear photo: object-contain guarantees 100% head, face, hair, and posture visibility */}
+                    {/* Full photograph */}
                     <img
                       src={photo.src}
                       alt={photo.alt}
-                      className="relative z-10 max-h-full max-w-full object-contain rounded-xl drop-shadow-md group-hover:scale-103 transition-transform duration-500"
+                      className="relative z-10 h-full w-full photo-fit rounded-xl"
                       loading="lazy"
                     />
 
@@ -300,9 +301,10 @@ export const Scene08_SpecialMoments: React.FC<Scene08Props> = ({
 
       {/* Wish Blessing Modal */}
       {activeWishModal && (
-        <div
+        <StoryDialog
+          label="Special moment"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn"
-          onClick={() => setActiveWishModal(null)}
+          onDismiss={() => setActiveWishModal(null)}
         >
           <div
             className="relative w-full max-w-sm bg-gradient-to-b from-pink-50 to-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-pink-300 text-center flex flex-col items-center"
@@ -335,7 +337,7 @@ export const Scene08_SpecialMoments: React.FC<Scene08Props> = ({
               Thank You ✨
             </button>
           </div>
-        </div>
+        </StoryDialog>
       )}
     </div>
   );

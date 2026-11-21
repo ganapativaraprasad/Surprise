@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { StoryDialog } from '../components/common/StoryDialog';
 import { chapterTitles } from '../data/birthdayContent';
 import { birthdayPhotos, BirthdayPhoto } from '../data/photos';
 import { friendsInteractive } from '../data/interactiveContent';
@@ -43,13 +44,13 @@ export const Scene06_Friends: React.FC<Scene06Props> = ({
   };
 
   return (
-    <div className="relative min-h-screen w-full px-4 sm:px-6 lg:px-8 py-20 bg-gradient-to-b from-[#FDF5F2] via-[#F8EEF8] to-[#FFF3F6] text-[#4A3E4D] overflow-hidden">
+    <div className="album-page">
       {/* Background Cheerful Accents */}
       <div className="absolute top-10 left-10 w-80 h-80 bg-purple-200/40 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-10 right-10 w-80 h-80 bg-pink-200/40 rounded-full blur-3xl pointer-events-none" />
 
       {/* Header */}
-      <div className="relative z-10 max-w-3xl mx-auto text-center mb-10">
+      <div className="album-heading">
         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-purple-100 text-purple-700 text-xs font-bold tracking-widest uppercase mb-4 shadow-xs">
           <Users className="w-3.5 h-3.5" />
           <span>{chapter.tag}</span>
@@ -94,7 +95,7 @@ export const Scene06_Friends: React.FC<Scene06Props> = ({
           <img
             src={mysteryPhoto.src}
             alt="Mystery photograph"
-            className="w-full h-full object-cover"
+            className="w-full h-full photo-fit"
           />
 
           {/* Decorative Scratch/Peel Overlays */}
@@ -132,13 +133,13 @@ export const Scene06_Friends: React.FC<Scene06Props> = ({
           </span>
         </div>
 
-        <div className="flex flex-wrap items-start justify-center gap-6 sm:gap-8 lg:gap-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 items-start gap-6 sm:gap-8 lg:gap-10">
           {photos.map((photo: BirthdayPhoto, index: number) => {
             const msg = friendsInteractive.friendshipMessages[index % friendsInteractive.friendshipMessages.length];
             return (
               <div
                 key={photo.id}
-                className="flex flex-col items-center cursor-pointer group"
+                className="flex w-full max-w-xs justify-self-center flex-col items-center cursor-pointer group"
                 onClick={() => setActiveFriendMsg({ photo, message: msg })}
               >
                 <HangingPhoto
@@ -170,9 +171,10 @@ export const Scene06_Friends: React.FC<Scene06Props> = ({
 
       {/* Friendship Photo Revelation Modal */}
       {activeFriendMsg && (
-        <div
+        <StoryDialog
+          label="Friendship memory"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn"
-          onClick={() => setActiveFriendMsg(null)}
+          onDismiss={() => setActiveFriendMsg(null)}
         >
           <div
             className="relative w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-purple-200 text-center flex flex-col items-center"
@@ -201,7 +203,7 @@ export const Scene06_Friends: React.FC<Scene06Props> = ({
               <img
                 src={activeFriendMsg.photo.src}
                 alt={activeFriendMsg.photo.alt}
-                className="w-full h-full object-cover"
+                className="w-full h-full photo-fit"
               />
             </div>
 
@@ -225,14 +227,15 @@ export const Scene06_Friends: React.FC<Scene06Props> = ({
               </button>
             </div>
           </div>
-        </div>
+        </StoryDialog>
       )}
 
       {/* 3. FRIENDSHIP SURPRISE BOX MODAL */}
       {isGiftOpen && (
-        <div
+        <StoryDialog
+          label="Friendship quiz"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-md animate-fadeIn"
-          onClick={() => setIsGiftOpen(false)}
+          onDismiss={() => setIsGiftOpen(false)}
         >
           <div
             className="relative w-full max-w-md bg-gradient-to-b from-purple-50 via-pink-50 to-white rounded-3xl p-6 sm:p-8 shadow-2xl border-2 border-purple-300 text-center flex flex-col items-center"
@@ -264,7 +267,7 @@ export const Scene06_Friends: React.FC<Scene06Props> = ({
               Thank You! ❤️
             </button>
           </div>
-        </div>
+        </StoryDialog>
       )}
     </div>
   );

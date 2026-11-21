@@ -1,138 +1,86 @@
-import React, { useState } from 'react';
-import { Volume2, VolumeX, Pause, Play, Sliders } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Music2, Pause, Play, Volume2, VolumeX } from 'lucide-react';
 import { ChapterMusicConfig } from '../../data/music';
 
 interface AudioPlayerProps {
   isPlaying: boolean;
   isMuted: boolean;
   volume: number;
-  worldMode: 'memory' | 'universe';
-  isDarkTheme?: boolean;
   currentTrack?: ChapterMusicConfig;
   onTogglePlay: () => void;
   onToggleMute: () => void;
   onVolumeChange: (vol: number) => void;
 }
 
-export const AudioPlayer: React.FC<AudioPlayerProps> = ({
+export function AudioPlayer({
   isPlaying,
   isMuted,
   volume,
-  worldMode,
-  isDarkTheme,
   currentTrack,
   onTogglePlay,
   onToggleMute,
   onVolumeChange,
-}) => {
-  const [showSlider, setShowSlider] = useState(false);
+}: AudioPlayerProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const controlsRef = useRef<HTMLDivElement>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
 
-  const isDark = worldMode === 'universe' || !!isDarkTheme;
+  useEffect(() => {
+    if (!isOpen) return;
+    const dismissOutside = (event: PointerEvent) => {
+      if (event.target instanceof Node && !controlsRef.current?.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('pointerdown', dismissOutside);
+    return () => document.removeEventListener('pointerdown', dismissOutside);
+  }, [isOpen]);
 
   return (
-    <div className="fixed top-5 right-5 z-50 flex items-center gap-2">
-      <div
-        className={`flex items-center gap-2 px-3 py-2 rounded-full backdrop-blur-md transition-all duration-300 shadow-md ${
-          isDark
-            ? 'bg-slate-900/80 border border-slate-700/60 text-slate-200'
-            : 'bg-white/80 border border-pink-200/60 text-slate-700'
-        }`}
+    <div
+      className="sound-controls"
+      ref={controlsRef}
+      onKeyDown={(event) => {
+        if (event.key === 'Escape' && isOpen) {
+          setIsOpen(false);
+          toggleRef.current?.focus();
+        }
+      }}
+    >
+      <button type="button" className="story-icon-button sound-play" onClick={onTogglePlay} aria-label={isPlaying ? 'Pause music' : 'Play music'}>
+        {isPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
+      </button>
+      <button
+        type="button"
+        className="sound-toggle"
+        ref={toggleRef}
+        onClick={() => setIsOpen((open) => !open)}
+        aria-label="Sound settings"
+        aria-expanded={isOpen}
+        aria-controls={isOpen ? 'sound-settings' : undefined}
       >
-        {/* Play/Pause Button */}
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onTogglePlay();
-          }}
-          aria-label={isPlaying ? 'Pause music' : 'Play music'}
-          className={`cursor-pointer flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-all shadow-xs ${
-            isPlaying
-              ? isDark
-                ? 'bg-violet-600/50 text-violet-100 border border-violet-400/50 hover:bg-violet-600/70'
-                : 'bg-pink-100 text-pink-800 border border-pink-300 hover:bg-pink-200'
-              : isDark
-              ? 'bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-600/50'
-              : 'bg-white hover:bg-pink-50 text-slate-700 border border-pink-200'
-          }`}
-        >
-          {isPlaying ? (
-            <>
-              <Pause className="w-3.5 h-3.5 fill-current" />
-              <span className="hidden sm:inline truncate max-w-[150px]">
-                {currentTrack ? currentTrack.title : 'Playing Melody'}
-              </span>
-            </>
-          ) : (
-            <>
-              <Play className="w-3.5 h-3.5 fill-current text-pink-600 dark:text-violet-400" />
-              <span className="hidden sm:inline">Play Chapter Music</span>
-            </>
-          )}
-
-          {/* Animated music wave bars when playing */}
-          {isPlaying && (
-            <div className="flex items-end gap-0.5 h-3 ml-0.5">
-              <span
-                className="w-0.5 bg-current rounded-full animate-[pulse_0.7s_infinite_ease-in-out]"
-                style={{ height: '70%' }}
-              />
-              <span
-                className="w-0.5 bg-current rounded-full animate-[pulse_0.9s_infinite_ease-in-out_0.2s]"
-                style={{ height: '100%' }}
-              />
-              <span
-                className="w-0.5 bg-current rounded-full animate-[pulse_0.6s_infinite_ease-in-out_0.4s]"
-                style={{ height: '50%' }}
-              />
-            </div>
-          )}
-        </button>
-
-        {/* Mute/Unmute */}
-        <button
-          onClick={onToggleMute}
-          aria-label={isMuted ? 'Unmute' : 'Mute'}
-          className={`p-1.5 rounded-full transition-colors ${
-            isDark ? 'hover:bg-slate-800 text-slate-300' : 'hover:bg-pink-50 text-slate-600'
-          }`}
-        >
-          {isMuted ? <VolumeX className="w-4 h-4 text-rose-400" /> : <Volume2 className="w-4 h-4" />}
-        </button>
-
-        {/* Volume toggle slider */}
-        <button
-          onClick={() => setShowSlider(!showSlider)}
-          aria-label="Volume settings"
-          className={`p-1.5 rounded-full transition-colors hidden sm:block ${
-            showSlider
-              ? isDark
-                ? 'bg-violet-900/50 text-violet-300'
-                : 'bg-pink-100 text-pink-700'
-              : isDark
-              ? 'hover:bg-slate-800 text-slate-400'
-              : 'hover:bg-pink-50 text-slate-400'
-          }`}
-        >
-          <Sliders className="w-3.5 h-3.5" />
-        </button>
-
-        {/* Volume Slider Dropdown */}
-        {showSlider && (
-          <div className="flex items-center gap-1.5 pr-1 animate-fadeIn">
+        <Music2 size={16} aria-hidden="true" />
+        <span>Sound</span>
+      </button>
+      {isOpen && (
+        <div id="sound-settings" className="sound-popover">
+          <p>{currentTrack?.title ?? 'Chapter music'}</p>
+          <div>
+            <button type="button" className="story-icon-button" onClick={onToggleMute} aria-label={isMuted ? 'Unmute music' : 'Mute music'}>
+              {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+            </button>
             <input
               type="range"
               min="0"
               max="1"
-              step="0.05"
-              value={isMuted ? 0 : volume}
-              onChange={(e) => onVolumeChange(parseFloat(e.target.value))}
-              className="w-16 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-pink-500"
-              aria-label="Volume level"
+              step="0.01"
+              value={volume}
+              aria-label="Music volume"
+              onChange={(event) => onVolumeChange(event.currentTarget.valueAsNumber)}
             />
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
-};
+}

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
+import { StoryDialog } from '../components/common/StoryDialog';
 import { chapterTitles } from '../data/birthdayContent';
 import { birthdayPhotos, BirthdayPhoto } from '../data/photos';
 import { ourMemoriesInteractive } from '../data/interactiveContent';
@@ -18,6 +19,7 @@ export const Scene07_OurMemories: React.FC<Scene07Props> = ({
 
   // 3D Carousel active center index
   const [carouselIdx, setCarouselIdx] = useState(0);
+  const touchStart = useRef<number | null>(null);
 
   // Active opened personal note beside photo
   const [activeNoteIdx, setActiveNoteIdx] = useState<number | null>(null);
@@ -48,13 +50,13 @@ export const Scene07_OurMemories: React.FC<Scene07Props> = ({
     collectedConstellation.length === ourMemoriesInteractive.constellationStars.length;
 
   return (
-    <div className="relative min-h-screen w-full px-4 sm:px-6 lg:px-8 py-20 bg-gradient-to-b from-[#FFF3F6] via-[#FFFDF9] to-[#F8F2FC] text-[#4A3E4D] overflow-hidden">
+    <div className="album-page">
       {/* Soft Rosy & Lavender Blurs */}
       <div className="absolute top-1/4 -right-20 w-96 h-96 bg-rose-200/40 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/4 -left-20 w-96 h-96 bg-purple-200/40 rounded-full blur-3xl pointer-events-none" />
 
       {/* Header */}
-      <div className="relative z-10 max-w-3xl mx-auto text-center mb-10">
+      <div className="album-heading">
         <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-rose-100 text-rose-700 text-xs font-bold tracking-widest uppercase mb-4 shadow-xs">
           <Heart className="w-3.5 h-3.5 fill-current" />
           <span>{chapter.tag} • BEST FRIENDS FOREVER</span>
@@ -116,92 +118,79 @@ export const Scene07_OurMemories: React.FC<Scene07Props> = ({
         );
       })}
 
-      {/* 1. INTERACTIVE 3D PHOTO CAROUSEL */}
+      {/* Shared photo album */}
       <div className="relative z-10 max-w-5xl mx-auto my-12">
         <div className="text-center mb-6">
           <span className="text-xs font-mono uppercase tracking-widest text-slate-400">
-            Swipe or use arrows to rotate through our moments:
+            Swipe or use the arrows to browse our memories
           </span>
         </div>
 
-        <div className="relative flex items-center justify-center min-h-[380px] sm:min-h-[440px] perspective-1000 select-none">
-          {photos.map((photo: BirthdayPhoto, index: number) => {
-            const total = photos.length;
-            // Calculate relative offset from active center
-            let offset = index - carouselIdx;
-            if (offset > total / 2) offset -= total;
-            if (offset < -total / 2) offset += total;
+        <div
+          className="memory-carousel"
+          aria-label="Shared memories carousel"
+          role="group"
+          data-local-keys
+          onKeyDown={(event) => {
+            if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+            event.preventDefault();
+            if (event.key === 'ArrowRight') handleNextPhoto();
+            else handlePrevPhoto();
+          }}
+          onTouchStart={(event) => {
+            touchStart.current = event.touches.length === 1 ? event.touches[0].clientX : null;
+          }}
+          onTouchCancel={() => { touchStart.current = null; }}
+          onTouchEnd={(event) => {
+            if (touchStart.current === null) return;
+            const distance = event.changedTouches[0].clientX - touchStart.current;
+            touchStart.current = null;
+            if (distance < -48) handleNextPhoto();
+            if (distance > 48) handlePrevPhoto();
+          }}
+        >
+          <div className="memory-stage">
+            {[-1, 0, 1].map((offset) => {
+              const index = (carouselIdx + offset + photos.length) % photos.length;
+              const photo = photos[index];
+              const isCurrent = offset === 0;
 
-            const isCenter = offset === 0;
-            const isLeft = offset === -1;
-            const isVisible = Math.abs(offset) <= 1;
-
-            if (!isVisible) return null;
-
-            return (
-              <div
-                key={photo.id}
-                onClick={() => {
-                  if (isCenter) onSelectPhoto(photo);
-                  else setCarouselIdx(index);
-                }}
-                className={`absolute transition-all duration-500 ease-out cursor-pointer ${
-                  isCenter
-                    ? 'z-30 scale-105 shadow-2xl opacity-100'
-                    : isLeft
-                    ? 'z-10 -translate-x-44 sm:-translate-x-64 scale-90 rotate-y-25 opacity-75 blur-[0.5px]'
-                    : 'z-10 translate-x-44 sm:translate-x-64 scale-90 -rotate-y-25 opacity-75 blur-[0.5px]'
-                }`}
-              >
-                <div className="w-64 sm:w-80 bg-white rounded-3xl p-4 shadow-xl border border-rose-100 text-center flex flex-col items-center">
-                  <div className="w-full aspect-[3/4] rounded-2xl overflow-hidden bg-rose-50 mb-3 relative group">
-                    <img
-                      src={photo.src}
-                      alt={photo.alt}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    {isCenter && (
-                      <div className="absolute inset-0 bg-slate-900/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
-                        <ZoomIn className="w-6 h-6" />
-                      </div>
-                    )}
-                  </div>
-
-                  <p className="font-serif text-base sm:text-lg font-bold text-slate-800 line-clamp-2 px-2">
+              return (
+                <article key={photo.id} className="memory-print" data-current={isCurrent}>
+                  <button
+                    type="button"
+                    onClick={() => isCurrent ? onSelectPhoto(photo) : setCarouselIdx(index)}
+                    aria-label={`${isCurrent ? 'Enlarge' : 'Show'} ${photo.alt}`}
+                    className="photo-mat memory-photo"
+                  >
+                    <img src={photo.src} alt={photo.alt} className="photo-fit" />
+                    {isCurrent && <span className="memory-zoom" aria-hidden="true"><ZoomIn size={18} /></span>}
+                  </button>
+                  <p className="font-serif text-base sm:text-lg font-semibold text-slate-800">
                     "{photo.caption}"
                   </p>
-
-                  {/* 2. OPEN THE MEMORY ENVELOPE BUTTON */}
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setActiveNoteIdx(index);
-                    }}
-                    className="mt-3 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold border border-rose-200 shadow-xs transition-all"
+                    type="button"
+                    onClick={() => setActiveNoteIdx(index)}
+                    className="memory-note-button"
                   >
-                    <Mail className="w-3.5 h-3.5 text-rose-500" />
+                    <Mail size={15} aria-hidden="true" />
                     <span>Open Memory Note ✉️</span>
                   </button>
-                </div>
-              </div>
-            );
-          })}
+                </article>
+              );
+            })}
+          </div>
 
-          {/* Carousel Navigation Arrows */}
-          <button
-            onClick={handlePrevPhoto}
-            aria-label="Previous memory"
-            className="absolute left-2 sm:left-8 z-40 p-3 rounded-full bg-white/90 hover:bg-white text-slate-700 shadow-xl border border-rose-100 transition-all hover:scale-110 active:scale-95"
-          >
-            <ChevronLeft className="w-6 h-6" />
-          </button>
-          <button
-            onClick={handleNextPhoto}
-            aria-label="Next memory"
-            className="absolute right-2 sm:right-8 z-40 p-3 rounded-full bg-white/90 hover:bg-white text-slate-700 shadow-xl border border-rose-100 transition-all hover:scale-110 active:scale-95"
-          >
-            <ChevronRight className="w-6 h-6" />
-          </button>
+          <div className="memory-controls">
+            <button type="button" onClick={handlePrevPhoto} aria-label="Previous memory" className="story-icon-button">
+              <ChevronLeft size={22} />
+            </button>
+            <span aria-live="polite">{carouselIdx + 1} / {photos.length}</span>
+            <button type="button" onClick={handleNextPhoto} aria-label="Next memory" className="story-icon-button">
+              <ChevronRight size={22} />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -260,9 +249,10 @@ export const Scene07_OurMemories: React.FC<Scene07Props> = ({
 
       {/* Opened Memory Note Modal */}
       {activeNoteIdx !== null && (
-        <div
+        <StoryDialog
+          label="Memory note"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn"
-          onClick={() => setActiveNoteIdx(null)}
+          onDismiss={() => setActiveNoteIdx(null)}
         >
           <div
             className="relative w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-rose-200 text-center flex flex-col items-center"
@@ -294,14 +284,15 @@ export const Scene07_OurMemories: React.FC<Scene07Props> = ({
               Cherish This Moment
             </button>
           </div>
-        </div>
+        </StoryDialog>
       )}
 
       {/* Constellation Star Modal */}
       {activeConstellationStar && (
-        <div
+        <StoryDialog
+          label="Constellation star"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn"
-          onClick={() => setActiveConstellationStar(null)}
+          onDismiss={() => setActiveConstellationStar(null)}
         >
           <div
             className="relative w-full max-w-sm bg-gradient-to-b from-rose-50 to-white rounded-3xl p-6 shadow-2xl border border-rose-300 text-center flex flex-col items-center"
@@ -326,7 +317,7 @@ export const Scene07_OurMemories: React.FC<Scene07Props> = ({
               Continue
             </button>
           </div>
-        </div>
+        </StoryDialog>
       )}
     </div>
   );

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useLayoutEffect } from 'react';
 
 export interface SceneMeta {
   index: number;
@@ -28,35 +28,32 @@ export const useSceneNavigation = (initialScene = 0) => {
   const goToScene = useCallback((index: number) => {
     if (index >= 0 && index < SCENES.length) {
       setCurrentScene(index);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, []);
 
   const nextScene = useCallback(() => {
-    setCurrentScene((prev) => {
-      if (prev < SCENES.length - 1) {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        return prev + 1;
-      }
-      return prev;
-    });
+    setCurrentScene((prev) => Math.min(prev + 1, SCENES.length - 1));
   }, []);
 
   const prevScene = useCallback(() => {
-    setCurrentScene((prev) => {
-      if (prev > 0) {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        return prev - 1;
-      }
-      return prev;
-    });
+    setCurrentScene((prev) => Math.max(prev - 1, 1));
   }, []);
+
+  useLayoutEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    if (currentScene > 0) {
+      document.getElementById('story-scene')?.focus({ preventScroll: true });
+    }
+  }, [currentScene]);
 
   // Keyboard navigation support: Left/Right arrow keys
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't intercept if user is typing in an input
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
+      if (document.querySelector('dialog[open], [aria-modal="true"]')) return;
+      if (e.target instanceof Element && e.target.closest(
+        'input, textarea, select, button, [contenteditable], [role="button"], [data-local-keys]'
+      )) return;
 
       if (e.key === 'ArrowRight' && currentScene < SCENES.length - 1) {
         // Only allow arrow navigation after invitation

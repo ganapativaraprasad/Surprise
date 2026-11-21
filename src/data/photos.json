@@ -6,10 +6,10 @@
       "caption": "Every beautiful story has a beginning.",
       "tag": "Beginning",
       "alt": "Sabdha Beginning photograph",
-      "width": 1600,
-      "height": 1200,
-      "aspectRatio": 1.33,
-      "orientation": "landscape",
+      "width": 1200,
+      "height": 1600,
+      "aspectRatio": 0.75,
+      "orientation": "portrait",
       "rotation": -2.5
     },
     {
@@ -30,10 +30,10 @@
       "caption": "A little smile from a beautiful beginning.",
       "tag": "Early Smile",
       "alt": "Sabdha Early Smile photograph",
-      "width": 1600,
-      "height": 1200,
-      "aspectRatio": 1.33,
-      "orientation": "landscape",
+      "width": 1200,
+      "height": 1600,
+      "aspectRatio": 0.75,
+      "orientation": "portrait",
       "rotation": -1.2
     },
     {
@@ -42,10 +42,10 @@
       "caption": "The sweetest chapters start small.",
       "tag": "Sweet Chapters",
       "alt": "Sabdha Sweet Chapters photograph",
-      "width": 960,
-      "height": 1280,
-      "aspectRatio": 0.75,
-      "orientation": "portrait",
+      "width": 1280,
+      "height": 960,
+      "aspectRatio": 1.33,
+      "orientation": "landscape",
       "rotation": 2.4
     },
     {
@@ -202,7 +202,7 @@
       "alt": "Sabdha Quiet Strength photograph",
       "width": 174,
       "height": 347,
-      "aspectRatio": 0.5,
+      "aspectRatio": 0.50,
       "orientation": "portrait",
       "rotation": 1.5
     },
@@ -360,7 +360,7 @@
       "alt": "Sabdha Home photograph",
       "width": 1062,
       "height": 662,
-      "aspectRatio": 1.6,
+      "aspectRatio": 1.60,
       "orientation": "landscape",
       "rotation": -2.5
     },
@@ -528,10 +528,10 @@
       "caption": "The ones who make ordinary days feel special.",
       "tag": "Celebration",
       "alt": "Sabdha Celebration photograph",
-      "width": 720,
-      "height": 1280,
-      "aspectRatio": 0.56,
-      "orientation": "portrait",
+      "width": 1280,
+      "height": 720,
+      "aspectRatio": 1.78,
+      "orientation": "landscape",
       "rotation": -2.0
     },
     {

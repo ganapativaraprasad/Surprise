@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { StoryDialog } from '../components/common/StoryDialog';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 import { chapterTitles, personalLetter } from '../data/birthdayContent';
 import { birthdayPhotos, BirthdayPhoto } from '../data/photos';
 import { birthdayLetterInteractive } from '../data/interactiveContent';
@@ -18,6 +20,7 @@ export const Scene09_BirthdayLetter: React.FC<Scene09Props> = ({
   const chapter = chapterTitles.letter;
   const letter = personalLetter;
   const letterPhoto = birthdayPhotos.birthdayLetter;
+  const reducedMotion = useReducedMotion();
 
   // Envelope state: closed -> opening -> opened
   const [envelopeState, setEnvelopeState] = useState<'closed' | 'opening' | 'opened'>('closed');
@@ -26,25 +29,29 @@ export const Scene09_BirthdayLetter: React.FC<Scene09Props> = ({
   const [isFinalSurpriseOpen, setIsFinalSurpriseOpen] = useState(false);
 
   const handleOpenLetter = () => {
+    if (envelopeState !== 'closed') return;
     setEnvelopeState('opening');
     onPlayEnvelopeSfx();
-    setTimeout(() => {
-      setEnvelopeState('opened');
-    }, 800);
   };
+
+  useEffect(() => {
+    if (envelopeState !== 'opening') return;
+    const timer = window.setTimeout(() => setEnvelopeState('opened'), reducedMotion ? 0 : 650);
+    return () => window.clearTimeout(timer);
+  }, [envelopeState, reducedMotion]);
 
   const handleRefoldLetter = () => {
     setEnvelopeState('closed');
   };
 
   return (
-    <div className="relative min-h-screen w-full px-4 sm:px-6 lg:px-8 py-20 bg-gradient-to-b from-[#FBF5F9] via-[#FFFDF9] to-[#F2EBF9] text-[#4A3E4D] overflow-hidden">
+    <div className="album-page">
       {/* Background Ambience */}
       <div className="absolute top-1/4 left-1/4 w-[450px] h-[450px] bg-pink-100/50 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-[450px] h-[450px] bg-purple-100/50 rounded-full blur-[100px] pointer-events-none" />
 
       {/* Header */}
-      <div className="relative z-10 max-w-3xl mx-auto text-center mb-12">
+      <div className="album-heading">
         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-rose-100 text-rose-700 text-xs font-bold tracking-widest uppercase mb-4 shadow-xs">
           <Feather className="w-3.5 h-3.5" />
           <span>{chapter.tag}</span>
@@ -69,16 +76,12 @@ export const Scene09_BirthdayLetter: React.FC<Scene09Props> = ({
                   handleOpenLetter();
                 }
               }}
-              className={`group cursor-pointer relative w-72 sm:w-96 h-52 sm:h-64 bg-gradient-to-tr from-[#FFF7EE] via-[#FDF0E2] to-[#FCE8D5] rounded-3xl shadow-2xl p-6 flex flex-col items-center justify-center border-2 border-amber-300 hover:scale-105 transition-all duration-500 select-none ${
-                envelopeState === 'opening' ? 'scale-110 shadow-rose-200 shadow-2xl' : ''
+              className={`letter-envelope group cursor-pointer relative p-6 flex flex-col items-center justify-center select-none ${
+                envelopeState === 'opening' ? 'is-opening' : ''
               }`}
             >
               {/* Wax Seal */}
-              <div
-                className={`w-16 h-16 rounded-full bg-gradient-to-tr from-rose-600 to-pink-500 text-white shadow-xl flex items-center justify-center group-hover:scale-110 transition-transform ${
-                  envelopeState === 'opening' ? 'animate-ping' : ''
-                }`}
-              >
+              <div className="letter-seal w-16 h-16 rounded-full text-white flex items-center justify-center">
                 <Heart className="w-8 h-8 fill-current text-rose-100" />
               </div>
 
@@ -90,7 +93,7 @@ export const Scene09_BirthdayLetter: React.FC<Scene09Props> = ({
               </span>
 
               {envelopeState === 'opening' && (
-                <div className="absolute inset-0 bg-white/40 backdrop-blur-xs rounded-3xl flex items-center justify-center text-rose-600 font-bold font-mono text-xs uppercase animate-pulse">
+                <div className="letter-opening-status" role="status">
                   Unfolding Your Letter... ✨
                 </div>
               )}
@@ -110,7 +113,7 @@ export const Scene09_BirthdayLetter: React.FC<Scene09Props> = ({
           </div>
         ) : (
           /* 2. OPENED PARCHMENT LETTER */
-          <div className="w-full bg-[#FFFDF9] rounded-3xl p-6 sm:p-10 md:p-12 shadow-2xl border border-amber-200/80 relative animate-fadeIn transition-all">
+          <div className="letter-paper w-full p-6 sm:p-10 md:p-12 border relative animate-fadeIn">
             {/* Top Bar with Stamp & Re-Fold Button */}
             <div className="flex items-center justify-between border-b border-amber-200/50 pb-4 mb-6">
               <button
@@ -155,7 +158,7 @@ export const Scene09_BirthdayLetter: React.FC<Scene09Props> = ({
                     <img
                       src={letterPhoto.src}
                       alt={letterPhoto.alt}
-                      className="w-full h-full object-cover rounded-xs"
+                      className="w-full h-full photo-fit rounded-xs"
                     />
                   </div>
                   <div>
@@ -230,9 +233,10 @@ export const Scene09_BirthdayLetter: React.FC<Scene09Props> = ({
 
       {/* Hidden Final Surprise Modal */}
       {isFinalSurpriseOpen && (
-        <div
+        <StoryDialog
+          label="Birthday surprise"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-md animate-fadeIn"
-          onClick={() => setIsFinalSurpriseOpen(false)}
+          onDismiss={() => setIsFinalSurpriseOpen(false)}
         >
           <div
             className="relative w-full max-w-md bg-gradient-to-b from-rose-50 via-pink-50 to-white rounded-3xl p-6 sm:p-8 shadow-2xl border-2 border-rose-300 text-center flex flex-col items-center"
@@ -268,7 +272,7 @@ export const Scene09_BirthdayLetter: React.FC<Scene09Props> = ({
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
-        </div>
+        </StoryDialog>
       )}
     </div>
   );

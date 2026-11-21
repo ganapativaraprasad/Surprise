@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { lazy, Suspense, useCallback, useState, useEffect } from 'react';
+import { Sparkles } from 'lucide-react';
 import { useSceneNavigation } from './hooks/useSceneNavigation';
 import { useAudio } from './hooks/useAudio';
-import { FloatingParticles } from './components/common/FloatingParticles';
 import { AudioPlayer } from './components/common/AudioPlayer';
 import { ChapterIndicator } from './components/common/ChapterIndicator';
 import { ModalPhotoView } from './components/common/ModalPhotoView';
@@ -18,7 +18,7 @@ import { Scene07_OurMemories } from './scenes/Scene07_OurMemories';
 import { Scene08_SpecialMoments } from './scenes/Scene08_SpecialMoments';
 import { Scene09_BirthdayLetter } from './scenes/Scene09_BirthdayLetter';
 import { Scene10_CatchStarsGame } from './scenes/Scene10_CatchStarsGame';
-import { Scene11_FinalUniverse } from './scenes/Scene11_FinalUniverse';
+const Scene11_FinalUniverse = lazy(() => import('./scenes/Scene11_FinalUniverse'));
 
 export function App() {
   const {
@@ -50,6 +50,8 @@ export function App() {
 
   // Active selected photo for lightbox view
   const [selectedPhoto, setSelectedPhoto] = useState<BirthdayPhoto | null>(null);
+  const sceneId = scenes[currentScene].id;
+  const isDark = currentScene === 0 || currentScene >= 9;
 
   // Sync world mode with current scene
   useEffect(() => {
@@ -71,30 +73,29 @@ export function App() {
     goToScene(10); // Scene 11: The Magical Universe
   };
 
-  return (
-    <div
-      className={`relative min-h-screen w-full transition-colors duration-700 ${
-        isUniverseMode ? 'bg-[#050814] text-white' : 'bg-[#FFFDF9] text-[#4A3E4D]'
-      }`}
-    >
-      {/* Floating Ambient Particles for Memory World */}
-      {!isUniverseMode && currentScene > 0 && <FloatingParticles world="memory" density={28} />}
+  const playFinaleStar = useCallback(() => playStarCollect(4), [playStarCollect]);
 
-      {/* Persistent Audio Controls */}
-      <AudioPlayer
-        isPlaying={isPlaying}
-        isMuted={isMuted}
-        volume={volume}
-        worldMode={worldMode}
-        isDarkTheme={currentScene === 0 || isUniverseMode}
-        currentTrack={currentTrackInfo}
-        onTogglePlay={togglePlay}
-        onToggleMute={toggleMute}
-        onVolumeChange={setVolume}
-      />
+  return (
+    <div className="story" data-scene={sceneId} data-theme={isDark ? 'night' : 'paper'}>
+      <header className="story-masthead">
+        <div className="story-brand">
+          <span className="story-emblem" aria-hidden="true"><Sparkles size={17} /></span>
+          <span>Sabdha <i>22</i></span>
+        </div>
+        <AudioPlayer
+          key={sceneId}
+          isPlaying={isPlaying}
+          isMuted={isMuted}
+          volume={volume}
+          currentTrack={currentTrackInfo}
+          onTogglePlay={togglePlay}
+          onToggleMute={toggleMute}
+          onVolumeChange={setVolume}
+        />
+      </header>
 
       {/* Main Scene Content */}
-      <main className="relative z-10 w-full min-h-screen">
+      <main id="story-scene" className="story-scene relative w-full" tabIndex={-1}>
         {currentScene === 0 && (
           <Scene01_Invitation
             onOpenSurprise={handleOpenInvitation}
@@ -165,23 +166,25 @@ export function App() {
         )}
 
         {currentScene === 10 && (
-          <Scene11_FinalUniverse
-            onPlayWaterDropSfx={playWaterDrop}
-            onPlayStarCollectSfx={() => playStarCollect(4)}
-            onReplayJourney={() => goToScene(1)}
-            onSelectPhoto={setSelectedPhoto}
-          />
+          <Suspense fallback={<div className="finale-page finale-loading" role="status">Opening the magical universe…</div>}>
+            <Scene11_FinalUniverse
+              onPlayWaterDropSfx={playWaterDrop}
+              onPlayStarCollectSfx={playFinaleStar}
+              onReplayJourney={() => goToScene(1)}
+              onSelectPhoto={setSelectedPhoto}
+            />
+          </Suspense>
         )}
       </main>
 
       {/* Chapter Indicator Navigation (Scenes 1 through 10) */}
       <ChapterIndicator
+        key={sceneId}
         currentScene={currentScene}
         scenes={scenes}
         onSelectScene={goToScene}
         onNext={nextScene}
         onPrev={prevScene}
-        worldMode={worldMode}
       />
 
       {/* Full Size Photo Lightbox View with Next/Prev Navigation */}
